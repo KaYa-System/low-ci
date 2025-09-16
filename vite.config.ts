@@ -15,7 +15,9 @@ export default defineConfig({
             ssr: 'resources/js/ssr.ts',
             refresh: true,
         }),
-        tailwindcss(), // Reactivated after installing lightningcss-win32-x64-msvc
+        tailwindcss({
+            lightningcss: false
+        }),
         wayfinder({
             formVariants: true,
         }),
