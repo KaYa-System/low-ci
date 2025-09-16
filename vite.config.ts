@@ -15,9 +15,7 @@ export default defineConfig({
             ssr: 'resources/js/ssr.ts',
             refresh: true,
         }),
-        tailwindcss({
-            lightningcss: false
-        }),
+        // tailwindcss(), // Disabled temporarily due to Windows lightningcss issue
         wayfinder({
             formVariants: true,
         }),
