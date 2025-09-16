@@ -369,27 +369,33 @@ onMounted(() => {
 
 <style>
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-  @apply font-semibold text-gray-900;
+  font-weight: 600;
+  color: rgb(17 24 39);
 }
 
 .prose p {
-  @apply text-gray-800 leading-relaxed;
+  color: rgb(31 41 55);
+  line-height: 1.625;
 }
 
 .prose strong {
-  @apply font-semibold text-gray-900;
+  font-weight: 600;
+  color: rgb(17 24 39);
 }
 
 .prose em {
-  @apply italic text-gray-700;
+  font-style: italic;
+  color: rgb(55 65 81);
 }
 
 .prose ul, .prose ol {
-  @apply space-y-1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .prose li {
-  @apply text-gray-800;
+  color: rgb(31 41 55);
 }
 
 .scroll-mt-8 {
