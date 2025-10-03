@@ -2,23 +2,23 @@
   <div class="min-h-screen bg-background">
     <!-- Navigation Header -->
     <header class="bg-background/95 backdrop-blur-sm shadow-sm border-b border-border sticky top-0 z-50">
-      <nav class="container mx-auto px-4 py-4">
+      <nav class="container mx-auto px-4 py-3 lg:py-4">
         <div class="flex items-center justify-between">
           <!-- Logo and Brand -->
           <div class="flex items-center">
-            <Link href="/" class="flex items-center space-x-3 group">
-              <div class="w-10 h-10 bg-gradient-to-r from-primary to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                <Scale class="w-6 h-6 text-primary-foreground" />
+            <Link href="/" class="flex items-center space-x-2 lg:space-x-3 group">
+              <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-r from-primary to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <Scale class="w-4 h-4 lg:w-6 lg:h-6 text-primary-foreground" />
               </div>
-              <div class="hidden sm:block">
-                <h1 class="text-xl font-bold text-foreground group-hover:text-primary transition-colors">LégisCI</h1>
-                <p class="text-sm text-muted-foreground">Législation Ivoirienne</p>
+              <div class="hidden xs:block">
+                <h1 class="text-lg lg:text-xl font-bold text-foreground group-hover:text-primary transition-colors">LégisCI</h1>
+                <p class="text-xs lg:text-sm text-muted-foreground">Législation Ivoirienne</p>
               </div>
             </Link>
           </div>
 
           <!-- Search Bar (Desktop) -->
-          <div class="hidden md:flex flex-1 max-w-lg mx-8">
+          <div class="hidden lg:flex flex-1 max-w-lg mx-8">
             <div class="relative w-full group">
               <div class="absolute -inset-1 bg-gradient-to-r from-primary/20 to-purple-600/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-300" />
               <div class="relative">
@@ -35,37 +35,76 @@
           </div>
 
           <!-- Main Navigation -->
-          <div class="flex items-center space-x-6">
+          <div class="flex items-center space-x-2 lg:space-x-6">
             <!-- Chat IA Button -->
             <Link
               href="/chat"
-              class="flex items-center px-4 py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-200 font-medium shadow-md hover:shadow-lg group"
+              class="flex items-center px-3 py-2 lg:px-4 lg:py-2.5 bg-primary text-primary-foreground rounded-lg lg:rounded-xl hover:bg-primary/90 transition-all duration-200 font-medium shadow-md hover:shadow-lg group text-sm lg:text-base"
             >
-              <MessageCircle class="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" />
-              <span class="hidden sm:inline">Assistant IA</span>
+              <MessageCircle class="w-4 h-4 lg:mr-2 group-hover:rotate-12 transition-transform" />
+              <span class="hidden sm:inline ml-1 lg:ml-0">IA</span>
+              <span class="hidden lg:inline">Assistant IA</span>
             </Link>
 
             <!-- Mobile Menu Button -->
             <button
-              class="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
+              class="lg:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
               @click="showMobileMenu = !showMobileMenu"
+              :aria-label="showMobileMenu ? 'Fermer le menu' : 'Ouvrir le menu'"
             >
-              <Menu class="w-5 h-5" />
+              <Menu v-if="!showMobileMenu" class="w-5 h-5" />
+              <X v-else class="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <!-- Mobile Search -->
-        <div v-if="showMobileMenu" class="mt-4 md:hidden">
-          <div class="relative mb-4">
-            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <input
-              v-model="searchQuery"
-              @keyup.enter="performSearch"
-              type="text"
-              placeholder="Rechercher dans la législation..."
-              class="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 text-foreground placeholder:text-muted-foreground/60"
-            />
+        <!-- Mobile Menu Panel -->
+        <div 
+          v-if="showMobileMenu" 
+          class="lg:hidden mt-4 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 shadow-xl animate-slide-down"
+        >
+          <!-- Mobile Search -->
+          <div class="p-4 border-b border-border/30">
+            <div class="relative">
+              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <input
+                v-model="searchQuery"
+                @keyup.enter="performSearch; showMobileMenu = false"
+                type="text"
+                placeholder="Rechercher dans la législation..."
+                class="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 text-foreground placeholder:text-muted-foreground/60 text-base"
+              />
+            </div>
+          </div>
+
+          <!-- Mobile Navigation Links -->
+          <div class="p-4 space-y-3">
+            <Link 
+              href="/" 
+              @click="showMobileMenu = false"
+              class="flex items-center p-3 rounded-xl hover:bg-accent/50 transition-colors group"
+            >
+              <Scale class="w-5 h-5 mr-3 text-primary" />
+              <span class="font-medium text-foreground">Accueil</span>
+            </Link>
+            
+            <Link 
+              href="/search" 
+              @click="showMobileMenu = false"
+              class="flex items-center p-3 rounded-xl hover:bg-accent/50 transition-colors group"
+            >
+              <Search class="w-5 h-5 mr-3 text-muted-foreground" />
+              <span class="font-medium text-foreground">Recherche avancée</span>
+            </Link>
+            
+            <Link 
+              href="/chat" 
+              @click="showMobileMenu = false"
+              class="flex items-center p-3 rounded-xl hover:bg-accent/50 transition-colors group"
+            >
+              <MessageCircle class="w-5 h-5 mr-3 text-primary" />
+              <span class="font-medium text-foreground">Assistant IA</span>
+            </Link>
           </div>
         </div>
       </nav>
@@ -99,18 +138,18 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-card/50 backdrop-blur-sm border-t border-border mt-16">
-      <div class="container mx-auto px-4 py-12">
-        <div class="grid md:grid-cols-4 gap-8">
+    <footer class="bg-card/50 backdrop-blur-sm border-t border-border mt-8 lg:mt-16">
+      <div class="container mx-auto px-4 py-8 lg:py-12">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
           <!-- Brand -->
-          <div class="md:col-span-1">
+          <div class="col-span-2 md:col-span-1">
             <div class="flex items-center space-x-3 mb-4 group">
-              <div class="w-10 h-10 bg-gradient-to-r from-primary to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                <Scale class="w-6 h-6 text-primary-foreground" />
+              <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-r from-primary to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <Scale class="w-4 h-4 lg:w-6 lg:h-6 text-primary-foreground" />
               </div>
               <div>
-                <h3 class="text-lg font-bold text-foreground group-hover:text-primary transition-colors">LégisCI</h3>
-                <p class="text-sm text-muted-foreground">Législation Ivoirienne</p>
+                <h3 class="text-base lg:text-lg font-bold text-foreground group-hover:text-primary transition-colors">LégisCI</h3>
+                <p class="text-xs lg:text-sm text-muted-foreground">Législation Ivoirienne</p>
               </div>
             </div>
             <p class="text-muted-foreground text-sm leading-relaxed">
@@ -120,27 +159,24 @@
 
           <!-- Quick Links -->
           <div>
-            <h4 class="font-semibold text-foreground mb-4">Liens rapides</h4>
-            <div class="space-y-3">
+            <h4 class="font-semibold text-foreground mb-4 text-sm lg:text-base">Liens rapides</h4>
+            <div class="space-y-2 lg:space-y-3">
               <Link href="/" class="block text-muted-foreground hover:text-primary text-sm transition-colors hover:translate-x-1 duration-200">
                 Accueil
               </Link>
               <Link href="/search" class="block text-muted-foreground hover:text-primary text-sm transition-colors hover:translate-x-1 duration-200">
                 Rechercher
               </Link>
-              <Link href="/ai-chat" class="block text-muted-foreground hover:text-primary text-sm transition-colors hover:translate-x-1 duration-200">
+              <Link href="/chat" class="block text-muted-foreground hover:text-primary text-sm transition-colors hover:translate-x-1 duration-200">
                 Assistant IA
-              </Link>
-              <Link href="/procedures" class="block text-muted-foreground hover:text-primary text-sm transition-colors hover:translate-x-1 duration-200">
-                Procédures
               </Link>
             </div>
           </div>
 
           <!-- Legal Categories -->
           <div>
-            <h4 class="font-semibold text-foreground mb-4">Catégories</h4>
-            <div class="space-y-3">
+            <h4 class="font-semibold text-foreground mb-4 text-sm lg:text-base">Catégories</h4>
+            <div class="space-y-2 lg:space-y-3">
               <a href="/categories/constitution" class="block text-muted-foreground hover:text-primary text-sm transition-colors hover:translate-x-1 duration-200">
                 Constitution
               </a>
@@ -158,34 +194,34 @@
 
           <!-- About -->
           <div>
-            <h4 class="font-semibold text-foreground mb-4">À propos</h4>
+            <h4 class="font-semibold text-foreground mb-4 text-sm lg:text-base">À propos</h4>
             <div class="space-y-3 text-sm text-muted-foreground">
-              <p class="leading-relaxed">Une initiative pour démocratiser l'accès au droit ivoirien.</p>
+              <p class="leading-relaxed">Démocratiser l'accès au droit ivoirien.</p>
               <div class="flex items-center space-x-4 mt-4">
-                <button class="text-muted-foreground hover:text-primary transition-all duration-200 hover:scale-110">
-                  <Github class="w-5 h-5" />
+                <button class="text-muted-foreground hover:text-primary transition-all duration-200 hover:scale-110 p-2 -m-2" aria-label="GitHub">
+                  <Github class="w-4 h-4 lg:w-5 lg:h-5" />
                 </button>
-                <button class="text-muted-foreground hover:text-primary transition-all duration-200 hover:scale-110">
-                  <Twitter class="w-5 h-5" />
+                <button class="text-muted-foreground hover:text-primary transition-all duration-200 hover:scale-110 p-2 -m-2" aria-label="Twitter">
+                  <Twitter class="w-4 h-4 lg:w-5 lg:h-5" />
                 </button>
-                <button class="text-muted-foreground hover:text-primary transition-all duration-200 hover:scale-110">
-                  <Mail class="w-5 h-5" />
+                <button class="text-muted-foreground hover:text-primary transition-all duration-200 hover:scale-110 p-2 -m-2" aria-label="Contact">
+                  <Mail class="w-4 h-4 lg:w-5 lg:h-5" />
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="border-t border-border pt-8 mt-8">
-          <div class="flex flex-col md:flex-row justify-between items-center">
-            <p class="text-muted-foreground text-sm">
+        <div class="border-t border-border pt-6 lg:pt-8 mt-6 lg:mt-8">
+          <div class="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
+            <p class="text-muted-foreground text-xs lg:text-sm text-center lg:text-left">
               © {{ new Date().getFullYear() }} LégisCI. Plateforme libre d'accès à la législation ivoirienne.
             </p>
-            <div class="flex items-center space-x-6 mt-4 md:mt-0">
-              <a href="#" class="text-muted-foreground hover:text-primary text-sm transition-colors">
+            <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6">
+              <a href="#" class="text-muted-foreground hover:text-primary text-xs lg:text-sm transition-colors">
                 Politique de confidentialité
               </a>
-              <a href="#" class="text-muted-foreground hover:text-primary text-sm transition-colors">
+              <a href="#" class="text-muted-foreground hover:text-primary text-xs lg:text-sm transition-colors">
                 Conditions d'utilisation
               </a>
             </div>
@@ -200,7 +236,7 @@
 import { ref } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import {
-  Scale, ChevronRight, Search, MessageCircle, Menu,
+  Scale, ChevronRight, Search, MessageCircle, Menu, X,
   Github, Twitter, Mail
 } from 'lucide-vue-next'
 

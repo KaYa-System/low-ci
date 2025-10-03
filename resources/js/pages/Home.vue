@@ -2,22 +2,22 @@
     <LegalLayout>
         <div class="min-h-screen">
             <!-- Hero Section - Modern & Clean -->
-            <section class="relative overflow-hidden" style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/twcomponents/header.webp'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+            <section class="relative overflow-hidden min-h-[90vh] flex items-center" style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/twcomponents/header.webp'); background-size: cover; background-position: center; background-repeat: no-repeat;">
                 <!-- Overlay for better text readability -->
                 <div class="absolute inset-0 bg-black/20 backdrop-blur-[0.5px]"></div>
-                <div class="container mx-auto px-4 py-20 lg:py-32 relative z-10">
-                    <div class="text-center space-y-8">
+                <div class="container mx-auto px-4 py-12 sm:py-16 lg:py-24 relative z-10 w-full">
+                    <div class="text-center space-y-6 lg:space-y-8">
                         <!-- Logo Animation -->
                         <div class="relative">
-                            <div class="inline-flex items-center justify-center w-20 h-20 bg-primary rounded-3xl mb-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                                <Scale class="w-10 h-10 text-primary-foreground" />
+                            <div class="inline-flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 bg-primary rounded-2xl lg:rounded-3xl mb-4 lg:mb-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                                <Scale class="w-8 h-8 lg:w-10 lg:h-10 text-primary-foreground" />
                             </div>
                             <div class="absolute -inset-4 bg-primary/10 rounded-full blur-2xl -z-10 animate-pulse" />
                         </div>
 
                         <!-- Modern Typography -->
-                        <div class="space-y-4">
-                            <h1 class="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight">
+                        <div class="space-y-3 lg:space-y-4">
+                            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black tracking-tight">
                                 <span class="text-foreground font-black text-white leading-tight">Législation</span>
                                 <br />
                                 <span class="bg-gradient-to-r from-primary via-purple-600 to-red-500 bg-clip-text text-transparent">
@@ -25,32 +25,32 @@
                                 </span>
                             </h1>
 
-                            <p class="text-lg sm:text-xl text-white max-w-3xl mx-auto leading-relaxed">
+                            <p class="text-base sm:text-lg lg:text-xl text-white max-w-2xl lg:max-w-3xl mx-auto leading-relaxed px-4">
                                 Découvrez, explorez et comprenez la législation ivoirienne avec notre plateforme moderne et intuitive
                             </p>
                         </div>
 
                         <!-- Enhanced Search Bar -->
-                        <div class="max-w-2xl mx-auto">
+                        <div class="max-w-2xl mx-auto px-4">
                             <div class="relative group">
-                                <div class="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-300" />
-                                <div class="relative bg-background border-2 border-border rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300">
-                                    <Bot class="absolute left-6 top-6 text-muted-foreground w-5 h-5" />
+                                <div class="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-2xl lg:rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-300" />
+                                <div class="relative bg-background border-2 border-border rounded-2xl lg:rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300">
+                                    <Bot class="absolute left-4 lg:left-6 top-4 lg:top-6 text-muted-foreground w-4 h-4 lg:w-5 lg:h-5" />
                                     <textarea
                                         v-model="searchQuery"
                                         @focus="isSearchFocused = true"
                                         @blur="isSearchFocused = false"
                                         placeholder="Posez une question sur la législation ivoirienne..."
                                         rows="3"
-                                        class="w-full pl-16 pr-32 py-6 text-lg bg-transparent border-0 rounded-3xl focus:outline-none focus:ring-0 placeholder:text-muted-foreground/60 resize-none"
+                                        class="w-full pl-12 pr-4 lg:pl-16 lg:pr-32 py-4 lg:py-6 text-base lg:text-lg bg-transparent border-0 rounded-2xl lg:rounded-3xl focus:outline-none focus:ring-0 placeholder:text-muted-foreground/60 resize-none touch-target mobile-scroll"
                                     ></textarea>
                                     <Button
                                         @click="performSearch"
-                                        class="absolute right-2 bottom-2 rounded-2xl px-8 py-3 shadow-md hover:shadow-lg transition-all duration-200"
+                                        class="mt-4 lg:mt-0 lg:absolute lg:right-2 lg:bottom-2 w-full lg:w-auto rounded-xl lg:rounded-2xl px-6 lg:px-8 py-3 shadow-md hover:shadow-lg transition-all duration-200 touch-target"
                                         size="lg"
                                     >
-                                        <MessageCircle class="w-4 h-4 mr-2" />
-                                        Demander à l'IA
+                                        <MessageCircle class="w-4 h-4 lg:mr-2" />
+                                        <span class="ml-2 lg:ml-0">Demander à l'IA</span>
                                     </Button>
                                 </div>
                             </div>
@@ -59,12 +59,12 @@
                         <!-- AI Response Section -->
                         <div
                             v-if="isLoadingResponse || showAiResponse"
-                            class="mt-8 max-w-4xl mx-auto"
+                            class="mt-6 lg:mt-8 max-w-4xl mx-auto px-4"
                         >
                             <!-- Loading Animation -->
                             <div
                                 v-if="isLoadingResponse"
-                                class="bg-background/95 backdrop-blur-sm border border-border rounded-3xl p-8 shadow-xl animate-fade-in"
+                                class="bg-background/95 backdrop-blur-sm border border-border rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-xl animate-fade-in"
                             >
                                 <div class="flex items-center justify-center space-x-4">
                                     <div class="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center">
@@ -82,22 +82,22 @@
                             <!-- AI Response -->
                             <div
                                 v-else-if="showAiResponse && aiResponse"
-                                class="bg-gradient-to-b from-background via-background to-muted/20 backdrop-blur-md border border-border/60 rounded-3xl shadow-2xl animate-slide-up overflow-hidden"
+                                class="bg-gradient-to-b from-background via-background to-muted/20 backdrop-blur-md border border-border/60 rounded-2xl lg:rounded-3xl shadow-2xl animate-slide-up overflow-hidden mobile-scroll"
                                 dir="ltr"
                             >
                                 <!-- Header with gradient background -->
-                                <div class="bg-gradient-to-r from-primary/5 via-purple-500/5 to-pink-500/5 px-8 py-6 border-b border-border/30">
+                                <div class="bg-gradient-to-r from-primary/5 via-purple-500/5 to-pink-500/5 px-4 lg:px-8 py-4 lg:py-6 border-b border-border/30">
                                     <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-4">
-                                            <div class="relative">
-                                                <div class="w-12 h-12 bg-gradient-to-br from-primary via-purple-600 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
-                                                    <Bot class="w-6 h-6 text-white" />
+                                        <div class="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
+                                            <div class="relative flex-shrink-0">
+                                                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-primary via-purple-600 to-pink-500 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg">
+                                                    <Bot class="w-5 h-5 lg:w-6 lg:h-6 text-white" />
                                                 </div>
-                                                <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-background animate-pulse"></div>
+                                                <div class="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-green-400 rounded-full border-2 border-background animate-pulse"></div>
                                             </div>
-                                            <div>
-                                                <h3 class="text-xl font-bold text-foreground">Assistant IA Juridique</h3>
-                                                <p class="text-sm text-muted-foreground font-medium">Réponse intelligente et précise</p>
+                                            <div class="min-w-0 flex-1">
+                                                <h3 class="text-lg lg:text-xl font-bold text-foreground truncate">Assistant IA Juridique</h3>
+                                                <p class="text-xs lg:text-sm text-muted-foreground font-medium">Réponse intelligente et précise</p>
                                                 <div v-if="aiResponse.message.metadata && aiResponse.message.metadata.stream" class="mt-1">
                                                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                                          <div class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1.5 animate-pulse"></div>
@@ -110,37 +110,38 @@
                                             @click="closeAiResponse"
                                             variant="ghost"
                                             size="sm"
-                                            class="rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105"
+                                            class="rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target flex-shrink-0"
+                                            :aria-label="'Fermer la réponse'"
                                         >
-                                            <X class="w-5 h-5" />
+                                            <X class="w-4 h-4 lg:w-5 lg:h-5" />
                                         </Button>
                                     </div>
                                 </div>
 
                                 <!-- Content -->
-                                <div class="px-8 py-6 space-y-6">
+                                <div class="px-4 lg:px-8 py-4 lg:py-6 space-y-4 lg:space-y-6">
                                     <!-- User Question -->
-                                    <div class="bg-gradient-to-r from-muted/40 to-muted/20 rounded-2xl p-5 border border-border/40">
+                                    <div class="bg-gradient-to-r from-muted/40 to-muted/20 rounded-xl lg:rounded-2xl p-4 lg:p-5 border border-border/40">
                                         <div class="flex items-start space-x-3">
-                                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                <div class="w-3 h-3 bg-primary rounded-full"></div>
+                                            <div class="w-6 h-6 lg:w-8 lg:h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                <div class="w-2 h-2 lg:w-3 lg:h-3 bg-primary rounded-full"></div>
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Votre question</p>
-                                                <p class="text-foreground font-medium leading-relaxed">{{ aiResponse.query }}</p>
+                                                <p class="text-sm lg:text-base text-foreground font-medium leading-relaxed mobile-select">{{ aiResponse.query }}</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- AI Answer -->
-                                    <div class="bg-card/50 rounded-2xl p-6 border border-border/30 shadow-sm">
-                                        <div class="flex items-start space-x-4">
-                                            <div class="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-                                                <Bot class="w-5 h-5 text-white" />
+                                    <div class="bg-card/50 rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-border/30 shadow-sm">
+                                        <div class="flex items-start space-x-3 lg:space-x-4">
+                                            <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-primary to-purple-600 rounded-lg lg:rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                                                <Bot class="w-4 h-4 lg:w-5 lg:h-5 text-white" />
                                             </div>
                                             <div class="flex-1 min-w-0">
-                                                <div class="prose prose-sm max-w-none text-foreground leading-relaxed">
-                                                    <div v-html="formatAiMessage(aiResponse.message.content)" class="text-justify"></div>
+                                                <div class="prose prose-sm max-w-none text-foreground leading-relaxed mobile-select">
+                                                    <div v-html="formatAiMessage(aiResponse.message.content)" class="text-sm lg:text-base text-justify"></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -178,31 +179,31 @@
                                     </div>
 
                                     <!-- Actions Footer -->
-                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-border/30">
-                                        <div class="flex items-center space-x-3">
+                                    <div class="flex flex-col gap-4 pt-4 border-t border-border/30">
+                                        <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
                                             <Button
                                                 @click="continueToChat"
                                                 variant="default"
                                                 size="sm"
-                                                class="rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                                                class="w-full sm:w-auto rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 touch-target"
                                             >
                                                 <MessageCircle class="w-4 h-4 mr-2" />
-                                                Continuer la conversation
+                                                <span class="text-sm lg:text-base">Continuer la conversation</span>
                                             </Button>
                                             <Button
                                                 @click="copyResponse"
                                                 variant="outline"
                                                 size="sm"
-                                                class="rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105"
+                                                class="w-full sm:w-auto rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target"
                                             >
                                                 <Copy class="w-4 h-4 mr-2" />
-                                                Copier
+                                                <span class="text-sm lg:text-base">Copier</span>
                                             </Button>
                                         </div>
-                                        <div class="text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
-                                            <div class="flex items-center space-x-1">
-                                                <div class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
-                                                <span>Réponse générée par IA - Vérifiez auprès d'un professionnel</span>
+                                        <div class="text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-full">
+                                            <div class="flex items-center justify-center space-x-1 text-center">
+                                                <div class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
+                                                <span class="leading-tight">Réponse générée par IA - Vérifiez auprès d'un professionnel</span>
                                             </div>
                                         </div>
                                     </div>
@@ -211,17 +212,17 @@
                         </div>
 
                         <!-- Quick Access Pills -->
-                        <div class="flex flex-wrap justify-center gap-3">
+                        <div class="flex flex-wrap justify-center gap-2 lg:gap-3 px-4">
                             <Button
                                 v-for="category in featuredCategories"
                                 :key="category.slug"
                                 @click="browseCategory(category)"
                                 variant="outline"
-                                size="lg"
-                                class="rounded-full hover:scale-105 transition-all duration-200 hover:shadow-md"
+                                size="sm"
+                                class="rounded-full hover:scale-105 transition-all duration-200 hover:shadow-md touch-target text-sm lg:text-base px-3 lg:px-4 py-2 lg:py-2.5 no-select"
                             >
-                                <component :is="category.icon" class="w-4 h-4 mr-2" />
-                                {{ category.name }}
+                                <component :is="category.icon" class="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                                <span class="truncate">{{ category.name }}</span>
                             </Button>
                         </div>
                     </div>

@@ -1,16 +1,16 @@
 <template>
   <LegalLayout :breadcrumbs="[{label: 'Recherche'}]">
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-4 py-6 lg:py-8">
       
       <!-- Search Header -->
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-4">Recherche dans la législation</h1>
-        <p class="text-gray-600">Trouvez rapidement les textes juridiques qui vous intéressent</p>
+      <div class="mb-6 lg:mb-8">
+        <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2 lg:mb-4">Recherche dans la législation</h1>
+        <p class="text-sm lg:text-base text-gray-600">Trouvez rapidement les textes juridiques qui vous intéressent</p>
       </div>
 
       <!-- Advanced Search Form -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm mb-8">
-        <form @submit.prevent="performSearch" class="space-y-6">
+      <div class="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-sm mb-6 lg:mb-8">
+        <form @submit.prevent="performSearch" class="space-y-4 lg:space-y-6">
           
           <!-- Main Search -->
           <div>
@@ -18,19 +18,19 @@
               Termes de recherche
             </label>
             <div class="relative">
-              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 lg:w-5 lg:h-5" />
               <input
                 id="query"
                 v-model="searchForm.query"
                 type="text"
                 placeholder="Constitution, travail, article 15..."
-                class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base touch-target mobile-scroll"
               />
             </div>
           </div>
 
           <!-- Filters Row -->
-          <div class="grid md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             
             <!-- Document Type -->
             <div>
@@ -40,7 +40,7 @@
               <select
                 id="type"
                 v-model="searchForm.type"
-                class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                class="w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base touch-target"
               >
                 <option value="">Tous les types</option>
                 <option value="constitution">Constitution</option>
@@ -60,7 +60,7 @@
               <select
                 id="category"
                 v-model="searchForm.category_id"
-                class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                class="w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base touch-target"
               >
                 <option value="">Toutes les catégories</option>
                 <option v-for="category in categories" :key="category.id" :value="category.id">
@@ -70,7 +70,7 @@
             </div>
 
             <!-- Date Range -->
-            <div>
+            <div class="sm:col-span-2 lg:col-span-1">
               <label for="date_from" class="block text-sm font-medium text-gray-700 mb-2">
                 Publié après
               </label>
@@ -78,17 +78,17 @@
                 id="date_from"
                 v-model="searchForm.date_from"
                 type="date"
-                class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                class="w-full px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base touch-target"
               />
             </div>
           </div>
 
           <!-- Search Button -->
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <button
               type="button"
               @click="resetFilters"
-              class="text-gray-600 hover:text-gray-800 font-medium"
+              class="text-gray-600 hover:text-gray-800 font-medium text-sm lg:text-base touch-target order-2 sm:order-1"
             >
               Réinitialiser les filtres
             </button>
@@ -96,7 +96,7 @@
             <button
               type="submit"
               :disabled="isSearching"
-              class="bg-indigo-600 text-white px-8 py-3 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center"
+              class="w-full sm:w-auto bg-indigo-600 text-white px-6 lg:px-8 py-3 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center touch-target order-1 sm:order-2"
             >
               <Search class="w-4 h-4 mr-2" />
               {{ isSearching ? 'Recherche...' : 'Rechercher' }}
@@ -109,21 +109,21 @@
       <div v-if="hasSearched">
         
         <!-- Results Stats -->
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-xl font-semibold text-gray-900">Résultats de recherche</h2>
-            <p class="text-gray-600 mt-1" v-if="searchResults">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <div class="flex-1 min-w-0">
+            <h2 class="text-lg lg:text-xl font-semibold text-gray-900">Résultats de recherche</h2>
+            <p class="text-sm lg:text-base text-gray-600 mt-1" v-if="searchResults">
               {{ searchResults.total || 0 }} résultat(s) pour "{{ currentQuery }}"
             </p>
           </div>
 
           <!-- Sort Options -->
-          <div class="flex items-center space-x-4">
-            <label class="text-sm text-gray-600">Trier par :</label>
+          <div class="flex items-center space-x-3 lg:space-x-4 flex-shrink-0">
+            <label class="text-sm text-gray-600 hidden sm:inline">Trier par :</label>
             <select 
               v-model="sortBy"
               @change="performSearch"
-              class="px-3 py-1 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent touch-target flex-1 sm:flex-initial"
             >
               <option value="relevance">Pertinence</option>
               <option value="date_desc">Date (récent)</option>
@@ -134,58 +134,58 @@
         </div>
 
         <!-- Results List -->
-        <div v-if="searchResults && searchResults.data" class="space-y-6">
+        <div v-if="searchResults && searchResults.data" class="space-y-4 lg:space-y-6">
           
           <!-- Document Results -->
-          <div v-for="document in searchResults.data" :key="document.id" class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between">
-              <div class="flex-1">
-                <div class="flex items-center mb-2">
-                  <span :class="`inline-block w-2 h-2 rounded-full mr-2 ${getTypeColor(document.type)}`"></span>
-                  <span class="text-sm font-medium text-gray-500 uppercase tracking-wide">{{ document.type }}</span>
-                  <span class="mx-2 text-gray-300">•</span>
-                  <span class="text-sm text-gray-600">{{ document.reference_number }}</span>
+          <div v-for="document in searchResults.data" :key="document.id" class="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-sm hover:shadow-md transition-shadow mobile-scroll">
+            <div class="flex flex-col lg:flex-row lg:items-start gap-4">
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                  <span :class="`inline-block w-2 h-2 rounded-full ${getTypeColor(document.type)}`"></span>
+                  <span class="text-xs lg:text-sm font-medium text-gray-500 uppercase tracking-wide">{{ document.type }}</span>
+                  <span class="text-gray-300">•</span>
+                  <span class="text-xs lg:text-sm text-gray-600 truncate">{{ document.reference_number }}</span>
                 </div>
                 
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                  <Link :href="`/documents/${document.slug}`" class="hover:text-indigo-600 transition-colors">
+                <h3 class="text-base lg:text-lg font-semibold text-gray-900 mb-2 leading-tight">
+                  <Link :href="`/documents/${document.slug}`" class="hover:text-indigo-600 transition-colors mobile-select">
                     {{ document.title }}
                   </Link>
                 </h3>
                 
-                <p v-if="document.summary" class="text-gray-600 mb-3 line-clamp-2">
+                <p v-if="document.summary" class="text-sm lg:text-base text-gray-600 mb-3 line-clamp-2 mobile-select">
                   {{ document.summary }}
                 </p>
                 
-                <div class="flex items-center space-x-4 text-sm text-gray-500">
+                <div class="flex flex-wrap items-center gap-3 lg:gap-4 text-xs lg:text-sm text-gray-500">
                   <div class="flex items-center">
-                    <Calendar class="w-4 h-4 mr-1" />
-                    {{ formatDate(document.publication_date) }}
+                    <Calendar class="w-3 h-3 lg:w-4 lg:h-4 mr-1 flex-shrink-0" />
+                    <span class="truncate">{{ formatDate(document.publication_date) }}</span>
                   </div>
                   
                   <div v-if="document.category" class="flex items-center">
-                    <Tag class="w-4 h-4 mr-1" />
-                    {{ document.category.name }}
+                    <Tag class="w-3 h-3 lg:w-4 lg:h-4 mr-1 flex-shrink-0" />
+                    <span class="truncate">{{ document.category.name }}</span>
                   </div>
                   
                   <div class="flex items-center">
-                    <Eye class="w-4 h-4 mr-1" />
-                    {{ document.views_count }} vues
+                    <Eye class="w-3 h-3 lg:w-4 lg:h-4 mr-1 flex-shrink-0" />
+                    <span>{{ document.views_count }} vues</span>
                   </div>
                 </div>
               </div>
               
-              <div class="ml-4 flex flex-col gap-2">
+              <div class="flex lg:flex-col gap-2 lg:ml-4 lg:flex-shrink-0">
                 <Link 
                   :href="`/documents/${document.slug}`"
-                  class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium text-center"
+                  class="flex-1 lg:flex-initial px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium text-center touch-target"
                 >
                   Consulter
                 </Link>
                 
                 <button 
                   @click="askAiAboutDocument(document)"
-                  class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                  class="flex-1 lg:flex-initial px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium touch-target"
                 >
                   Poser une question
                 </button>
@@ -194,12 +194,12 @@
           </div>
 
           <!-- Pagination -->
-          <div v-if="searchResults.last_page > 1" class="flex items-center justify-center space-x-2 pt-6">
+          <div v-if="searchResults.last_page > 1" class="flex items-center justify-center flex-wrap gap-2 pt-6">
             <button
               v-for="page in getPaginationPages()"
               :key="page"
               @click="goToPage(page)"
-              class="px-3 py-2 rounded-lg transition-colors"
+              class="px-3 py-2 rounded-lg transition-colors touch-target min-w-[40px] text-sm lg:text-base"
               :class="page === searchResults.current_page 
                 ? 'bg-indigo-600 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
@@ -210,15 +210,15 @@
         </div>
 
         <!-- No Results -->
-        <div v-else class="text-center py-12">
-          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <SearchX class="w-8 h-8 text-gray-400" />
+        <div v-else class="text-center py-8 lg:py-12 px-4">
+          <div class="w-12 h-12 lg:w-16 lg:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <SearchX class="w-6 h-6 lg:w-8 lg:h-8 text-gray-400" />
           </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Aucun résultat trouvé</h3>
-          <p class="text-gray-600 mb-4">Essayez de modifier vos termes de recherche ou vos filtres.</p>
+          <h3 class="text-base lg:text-lg font-semibold text-gray-900 mb-2">Aucun résultat trouvé</h3>
+          <p class="text-sm lg:text-base text-gray-600 mb-4 max-w-md mx-auto">Essayez de modifier vos termes de recherche ou vos filtres.</p>
           <button 
             @click="resetFilters"
-            class="text-indigo-600 hover:text-indigo-800 font-medium"
+            class="text-indigo-600 hover:text-indigo-800 font-medium touch-target px-4 py-2 rounded-lg hover:bg-indigo-50 transition-colors"
           >
             Réinitialiser la recherche
           </button>
@@ -226,18 +226,18 @@
       </div>
 
       <!-- Search Suggestions (when no search has been performed) -->
-      <div v-else class="bg-white rounded-2xl p-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Recherches populaires</h3>
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div v-else class="bg-white rounded-xl lg:rounded-2xl p-6 lg:p-8">
+        <h3 class="text-base lg:text-lg font-semibold text-gray-900 mb-4">Recherches populaires</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <button
             v-for="suggestion in searchSuggestions"
             :key="suggestion"
             @click="searchForm.query = suggestion; performSearch()"
-            class="text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
+            class="text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all touch-target mobile-scroll"
           >
             <div class="flex items-center">
-              <TrendingUp class="w-4 h-4 text-indigo-600 mr-2" />
-              <span class="text-sm text-gray-700">{{ suggestion }}</span>
+              <TrendingUp class="w-4 h-4 text-indigo-600 mr-2 flex-shrink-0" />
+              <span class="text-sm text-gray-700 mobile-select">{{ suggestion }}</span>
             </div>
           </button>
         </div>
