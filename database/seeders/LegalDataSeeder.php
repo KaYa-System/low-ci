@@ -73,6 +73,28 @@ class LegalDataSeeder extends Seeder
                     'Impôts indirects',
                     'Douanes'
                 ]
+            ],
+            [
+                'name' => 'Droit de la nationalité',
+                'description' => 'Acquisition et perte de la nationalité ivoirienne',
+                'color' => '#ea580c',
+                'icon' => 'flag',
+                'children' => [
+                    'Code de la nationalité',
+                    'Naturalisation',
+                    'Double nationalité'
+                ]
+            ],
+            [
+                'name' => 'Droit de la famille',
+                'description' => 'Mariage, divorce, filiation et successions',
+                'color' => '#be185d',
+                'icon' => 'heart',
+                'children' => [
+                    'Mariage et divorce',
+                    'Filiation',
+                    'Successions'
+                ]
             ]
         ];
 
@@ -98,6 +120,8 @@ class LegalDataSeeder extends Seeder
         $this->createConstitution();
         $this->createCodeTravail();
         $this->createCodePenal();
+        $this->createCodeNationalite();
+        $this->createCodeCivil();
     }
 
     private function createConstitution(): void
@@ -208,7 +232,7 @@ class LegalDataSeeder extends Seeder
     private function createCodePenal(): void
     {
         $penalCategory = LegalCategory::where('name', 'Code pénal')->first();
-        
+
         $codePenal = LegalDocument::create([
             'title' => 'Loi n° 81-640 du 31 juillet 1981 instituant le Code pénal',
             'summary' => 'Code pénal de la République de Côte d\'Ivoire',
@@ -221,6 +245,120 @@ class LegalDataSeeder extends Seeder
             'status' => 'active',
             'category_id' => $penalCategory?->id
         ]);
+
+        // Articles du Code pénal
+        $articles = [
+            [
+                'number' => '1',
+                'content' => 'Nul n\'est punissable que d\'une peine légalement établie par une loi antérieure au délit.'
+            ],
+            [
+                'number' => '2',
+                'content' => 'Nulle peine ne peut être établie ni appliquée qu\'en vertu d\'une loi.'
+            ]
+        ];
+
+        foreach ($articles as $index => $articleData) {
+            LegalArticle::create([
+                'number' => $articleData['number'],
+                'content' => $articleData['content'],
+                'document_id' => $codePenal->id,
+                'sort_order' => $index
+            ]);
+        }
+    }
+
+    private function createCodeNationalite(): void
+    {
+        $nationaliteCategory = LegalCategory::where('name', 'Code de la nationalité')->first();
+
+        $codeNationalite = LegalDocument::create([
+            'title' => 'Loi n° 61-415 du 14 décembre 1961 portant Code de la nationalité ivoirienne',
+            'summary' => 'Code régissant l\'acquisition et la perte de la nationalité ivoirienne',
+            'content' => 'Le présent Code détermine les conditions dans lesquelles une personne acquiert, conserve ou perd la nationalité ivoirienne...',
+            'type' => 'code',
+            'reference_number' => 'Loi n° 61-415',
+            'publication_date' => Carbon::create(1961, 12, 14),
+            'effective_date' => Carbon::create(1961, 12, 14),
+            'journal_officiel' => 'JO du 14 décembre 1961',
+            'status' => 'active',
+            'category_id' => $nationaliteCategory?->id,
+            'is_featured' => true
+        ]);
+
+        // Articles clés du Code de la nationalité
+        $articles = [
+            [
+                'number' => '5',
+                'title' => 'Nationalité par filiation',
+                'content' => 'Est Ivoirien l\'enfant légitime né d\'un père ivoirien ou d\'une mère ivoirienne, que la naissance ait lieu en Côte d\'Ivoire ou à l\'étranger.'
+            ],
+            [
+                'number' => '6',
+                'title' => 'Nationalité par naissance sur le territoire',
+                'content' => 'Est Ivoirien tout enfant né en Côte d\'Ivoire d\'au moins un parent né en Côte d\'Ivoire.'
+            ],
+            [
+                'number' => '9',
+                'title' => 'Nationalité par mariage',
+                'content' => 'L\'étranger ou l\'étrangère qui épouse un Ivoirien ou une Ivoirienne acquiert la nationalité ivoirienne après deux ans de vie commune effective.'
+            ],
+            [
+                'number' => '10',
+                'title' => 'Naturalisation',
+                'content' => 'Peut être naturalisé ivoirien tout étranger âgé de 21 ans révolus qui justifie d\'une résidence habituelle et continue de 5 ans en Côte d\'Ivoire.'
+            ]
+        ];
+
+        foreach ($articles as $index => $articleData) {
+            LegalArticle::create([
+                'number' => $articleData['number'],
+                'title' => $articleData['title'] ?? null,
+                'content' => $articleData['content'],
+                'document_id' => $codeNationalite->id,
+                'sort_order' => $index
+            ]);
+        }
+    }
+
+    private function createCodeCivil(): void
+    {
+        $civilCategory = LegalCategory::where('name', 'Code civil')->first();
+
+        $codeCivil = LegalDocument::create([
+            'title' => 'Loi n° 64-376 du 7 octobre 1964 portant Code civil',
+            'summary' => 'Code civil de la République de Côte d\'Ivoire',
+            'content' => 'Le présent Code régit les droits et obligations des personnes physiques et morales...',
+            'type' => 'code',
+            'reference_number' => 'Loi n° 64-376',
+            'publication_date' => Carbon::create(1964, 10, 7),
+            'effective_date' => Carbon::create(1964, 10, 7),
+            'journal_officiel' => 'JO du 7 octobre 1964',
+            'status' => 'active',
+            'category_id' => $civilCategory?->id,
+            'is_featured' => true
+        ]);
+
+        // Articles du Code civil
+        $articles = [
+            [
+                'number' => '1',
+                'content' => 'Les lois civiles obligent tous ceux qui habitent le territoire de la Côte d\'Ivoire, sans distinction d\'origine, de race, de sexe, de religion ou de croyance.'
+            ],
+            [
+                'number' => '2',
+                'content' => 'Les biens sont meubles ou immeubles. Sont meubles les biens susceptibles de mouvement propre ou qui peuvent être mus par une force étrangère.'
+            ]
+        ];
+
+        foreach ($articles as $index => $articleData) {
+            LegalArticle::create([
+                'number' => $articleData['number'],
+                'content' => $articleData['content'],
+                'document_id' => $codeCivil->id,
+                'sort_order' => $index
+            ]);
+        }
     }
 
     private function getConstitutionContent(): string
