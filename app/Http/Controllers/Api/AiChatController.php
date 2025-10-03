@@ -153,7 +153,8 @@ class AiChatController extends Controller
     private function generateAiResponse(string $userMessage, AiChatSession $session): array
     {
         try {
-            // Use local Ollama API with DeepSeek model
+            // Use Hugging Face API with DeepSeek model
+            $apiKey = config('services.huggingface.api_key');
             $model = config('services.huggingface.model');
             $stream = config('services.huggingface.stream');
 
