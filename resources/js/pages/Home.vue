@@ -160,6 +160,7 @@
                                     v-else-if="showAiResponse && aiResponse"
                                     class="bg-gradient-to-b from-background via-background to-muted/20 backdrop-blur-md border border-border/60 rounded-2xl lg:rounded-3xl shadow-2xl animate-slide-up overflow-hidden max-h-[80vh] flex flex-col ai-response-fixed"
                                     dir="ltr"
+                                    @click.stop
                                 >
                                     <!-- Header with gradient background -->
                                     <div class="bg-gradient-to-r from-primary/5 via-purple-500/5 to-pink-500/5 px-4 lg:px-8 py-4 lg:py-6 border-b border-border/30">
@@ -257,8 +258,8 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- Fixed Actions Footer -->
-                                    <div class="flex-shrink-0 px-4 lg:px-8 py-4 border-t border-border/30 bg-background/80 backdrop-blur-sm">
+                                    <!-- Fixed Actions Footer with Liquid Glass Effect -->
+                                    <div class="flex-shrink-0 px-4 lg:px-8 py-4 border-t border-border/30 bg-background/20 backdrop-blur-xl backdrop-saturate-150 glass-footer">
                                         <div class="flex flex-col gap-4">
                                             <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
                                                 <Button
