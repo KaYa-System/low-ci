@@ -243,42 +243,127 @@ class AiChatController extends Controller
         // Enhanced keyword matching with multiple strategies
         $queries = [];
         
-        // Strategy 1: Type-based search with broader matching
-        if (str_contains($keywords, 'constitution') || str_contains($keywords, 'droits de l\'homme') || str_contains($keywords, 'droits fondamentaux')) {
+        // Strategy 1: Type-based search with extensive keyword matching
+        
+        // Constitution & Droits fondamentaux
+        if (str_contains($keywords, 'constitution') || str_contains($keywords, 'droits de l\'homme') || str_contains($keywords, 'droits fondamentaux') 
+            || str_contains($keywords, 'liberté') || str_contains($keywords, 'libertés') || str_contains($keywords, 'république') 
+            || str_contains($keywords, 'souveraineté') || str_contains($keywords, 'démocratie') || str_contains($keywords, 'égalité')
+            || str_contains($keywords, 'justice') || str_contains($keywords, 'dignité') || str_contains($keywords, 'citoyen')
+            || str_contains($keywords, 'citoyens') || str_contains($keywords, 'préambule') || str_contains($keywords, 'fondamental')) {
             $queries[] = LegalDocument::query()->active()->with('category')->where('type', 'constitution');
         }
         
-        if (str_contains($keywords, 'travail') || str_contains($keywords, 'employé') || str_contains($keywords, 'salarié') || str_contains($keywords, 'contrat') || str_contains($keywords, 'congé')) {
+        // Droit du travail étendu
+        if (str_contains($keywords, 'travail') || str_contains($keywords, 'employé') || str_contains($keywords, 'salarié') 
+            || str_contains($keywords, 'contrat') || str_contains($keywords, 'congé') || str_contains($keywords, 'emploi')
+            || str_contains($keywords, 'embauche') || str_contains($keywords, 'licenciement') || str_contains($keywords, 'salaire')
+            || str_contains($keywords, 'rémunération') || str_contains($keywords, 'patron') || str_contains($keywords, 'employeur')
+            || str_contains($keywords, 'syndicat') || str_contains($keywords, 'grève') || str_contains($keywords, 'horaire')
+            || str_contains($keywords, 'pause') || str_contains($keywords, 'repos') || str_contains($keywords, 'maladie')
+            || str_contains($keywords, 'accident') || str_contains($keywords, 'sécurité sociale') || str_contains($keywords, 'cnps')
+            || str_contains($keywords, 'retraite') || str_contains($keywords, 'apprentissage') || str_contains($keywords, 'formation')
+            || str_contains($keywords, 'stage') || str_contains($keywords, 'stagiaire') || str_contains($keywords, 'démission')) {
             $queries[] = LegalDocument::query()->active()->with('category')->where('title', 'like', '%travail%');
         }
         
-        if (str_contains($keywords, 'pénal') || str_contains($keywords, 'crime') || str_contains($keywords, 'délit') || str_contains($keywords, 'infraction')) {
+        // Droit pénal étendu
+        if (str_contains($keywords, 'pénal') || str_contains($keywords, 'crime') || str_contains($keywords, 'délit') 
+            || str_contains($keywords, 'infraction') || str_contains($keywords, 'prison') || str_contains($keywords, 'amende')
+            || str_contains($keywords, 'tribunal') || str_contains($keywords, 'juge') || str_contains($keywords, 'procès')
+            || str_contains($keywords, 'avocat') || str_contains($keywords, 'police') || str_contains($keywords, 'gendarmerie')
+            || str_contains($keywords, 'arrestation') || str_contains($keywords, 'garde à vue') || str_contains($keywords, 'enquête')
+            || str_contains($keywords, 'vol') || str_contains($keywords, 'meurtre') || str_contains($keywords, 'agression')
+            || str_contains($keywords, 'violence') || str_contains($keywords, 'viol') || str_contains($keywords, 'corruption')
+            || str_contains($keywords, 'fraude') || str_contains($keywords, 'escroquerie') || str_contains($keywords, 'blanchiment')
+            || str_contains($keywords, 'stupéfiant') || str_contains($keywords, 'drogue') || str_contains($keywords, 'trafic')
+            || str_contains($keywords, 'contrebande') || str_contains($keywords, 'peine') || str_contains($keywords, 'condamnation')) {
             $queries[] = LegalDocument::query()->active()->with('category')->where('title', 'like', '%pénal%');
         }
         
-        if (str_contains($keywords, 'entreprise') || str_contains($keywords, 'société') || str_contains($keywords, 'commerce') || str_contains($keywords, 'sarl') || str_contains($keywords, 'sa') || str_contains($keywords, 'business')) {
+        // Droit commercial et des affaires étendu
+        if (str_contains($keywords, 'entreprise') || str_contains($keywords, 'société') || str_contains($keywords, 'commerce') 
+            || str_contains($keywords, 'sarl') || str_contains($keywords, 'sa') || str_contains($keywords, 'business')
+            || str_contains($keywords, 'commercial') || str_contains($keywords, 'commerçant') || str_contains($keywords, 'boutique')
+            || str_contains($keywords, 'magasin') || str_contains($keywords, 'vente') || str_contains($keywords, 'achat')
+            || str_contains($keywords, 'client') || str_contains($keywords, 'fournisseur') || str_contains($keywords, 'facture')
+            || str_contains($keywords, 'crédit') || str_contains($keywords, 'banque') || str_contains($keywords, 'prêt')
+            || str_contains($keywords, 'investissement') || str_contains($keywords, 'capital') || str_contains($keywords, 'actionnaire')
+            || str_contains($keywords, 'associé') || str_contains($keywords, 'partenaire') || str_contains($keywords, 'cepici')
+            || str_contains($keywords, 'rccm') || str_contains($keywords, 'immatriculation') || str_contains($keywords, 'création')
+            || str_contains($keywords, 'startup') || str_contains($keywords, 'entrepreneur') || str_contains($keywords, 'auto-entrepreneur')
+            || str_contains($keywords, 'ohada') || str_contains($keywords, 'concurrence') || str_contains($keywords, 'monopole')) {
             $queries[] = LegalDocument::query()->active()->with('category')
                 ->where(function($q) {
                     $q->where('title', 'like', '%commerce%')
                       ->orWhere('title', 'like', '%société%')
-                      ->orWhere('title', 'like', '%civil%'); // Code civil contient du droit des sociétés
+                      ->orWhere('title', 'like', '%civil%')
+                      ->orWhere('title', 'like', '%ohada%');
                 });
         }
         
-        if (str_contains($keywords, 'nationalité') || str_contains($keywords, 'citoyenneté') || str_contains($keywords, 'naturalis') || str_contains($keywords, 'ivoirien')) {
+        // Nationalité et citoyenneté étendu
+        if (str_contains($keywords, 'nationalité') || str_contains($keywords, 'citoyenneté') || str_contains($keywords, 'naturalis') 
+            || str_contains($keywords, 'ivoirien') || str_contains($keywords, 'ivoirienne') || str_contains($keywords, 'passeport')
+            || str_contains($keywords, 'carte d\'identité') || str_contains($keywords, 'cni') || str_contains($keywords, 'étranger')
+            || str_contains($keywords, 'étrangère') || str_contains($keywords, 'immigration') || str_contains($keywords, 'émigration')
+            || str_contains($keywords, 'visa') || str_contains($keywords, 'résidence') || str_contains($keywords, 'expatrié')
+            || str_contains($keywords, 'diaspora') || str_contains($keywords, 'binational') || str_contains($keywords, 'apatride')
+            || str_contains($keywords, 'naissance') || str_contains($keywords, 'filiation') || str_contains($keywords, 'adoption')) {
             $queries[] = LegalDocument::query()->active()->with('category')->where('title', 'like', '%nationalité%');
         }
         
-        if (str_contains($keywords, 'mariage') || str_contains($keywords, 'divorce') || str_contains($keywords, 'famille') || str_contains($keywords, 'enfant') || str_contains($keywords, 'succession')) {
+        // Droit de la famille étendu
+        if (str_contains($keywords, 'mariage') || str_contains($keywords, 'divorce') || str_contains($keywords, 'famille') 
+            || str_contains($keywords, 'enfant') || str_contains($keywords, 'succession') || str_contains($keywords, 'époux')
+            || str_contains($keywords, 'épouse') || str_contains($keywords, 'conjoint') || str_contains($keywords, 'mari')
+            || str_contains($keywords, 'femme') || str_contains($keywords, 'père') || str_contains($keywords, 'mère')
+            || str_contains($keywords, 'parent') || str_contains($keywords, 'tutelle') || str_contains($keywords, 'curatelle')
+            || str_contains($keywords, 'héritage') || str_contains($keywords, 'testament') || str_contains($keywords, 'héritier')
+            || str_contains($keywords, 'veuve') || str_contains($keywords, 'veuf') || str_contains($keywords, 'orphelin')
+            || str_contains($keywords, 'pension') || str_contains($keywords, 'alimentaire') || str_contains($keywords, 'garde')
+            || str_contains($keywords, 'custody') || str_contains($keywords, 'mineur') || str_contains($keywords, 'majeur')
+            || str_contains($keywords, 'émancipation') || str_contains($keywords, 'dot') || str_contains($keywords, 'polygamie')) {
             $queries[] = LegalDocument::query()->active()->with('category')
                 ->where(function($q) {
                     $q->where('title', 'like', '%civil%')
-                      ->orWhere('title', 'like', '%famille%');
+                      ->orWhere('title', 'like', '%famille%')
+                      ->orWhere('title', 'like', '%mariage%')
+                      ->orWhere('title', 'like', '%succession%');
                 });
         }
         
-        if (str_contains($keywords, 'fiscal') || str_contains($keywords, 'impôt') || str_contains($keywords, 'taxe') || str_contains($keywords, 'douane')) {
-            $queries[] = LegalDocument::query()->active()->with('category')->where('title', 'like', '%fiscal%');
+        // Droit fiscal étendu
+        if (str_contains($keywords, 'fiscal') || str_contains($keywords, 'impôt') || str_contains($keywords, 'taxe') 
+            || str_contains($keywords, 'douane') || str_contains($keywords, 'tva') || str_contains($keywords, 'irpp')
+            || str_contains($keywords, 'is') || str_contains($keywords, 'contribution') || str_contains($keywords, 'redevance')
+            || str_contains($keywords, 'déclaration') || str_contains($keywords, 'contrôle') || str_contains($keywords, 'redressement')
+            || str_contains($keywords, 'contentieux') || str_contains($keywords, 'recours') || str_contains($keywords, 'exonération')
+            || str_contains($keywords, 'déduction') || str_contains($keywords, 'abattement') || str_contains($keywords, 'crédit d\'impôt')
+            || str_contains($keywords, 'patente') || str_contains($keywords, 'foncier') || str_contains($keywords, 'enregistrement')) {
+            $queries[] = LegalDocument::query()->active()->with('category')
+                ->where(function($q) {
+                    $q->where('title', 'like', '%fiscal%')
+                      ->orWhere('title', 'like', '%impôt%')
+                      ->orWhere('title', 'like', '%douane%')
+                      ->orWhere('title', 'like', '%taxe%');
+                });
+        }
+        
+        // Droit administratif
+        if (str_contains($keywords, 'administratif') || str_contains($keywords, 'administration') || str_contains($keywords, 'préfet')
+            || str_contains($keywords, 'maire') || str_contains($keywords, 'ministre') || str_contains($keywords, 'fonctionnaire')
+            || str_contains($keywords, 'service public') || str_contains($keywords, 'permis') || str_contains($keywords, 'autorisation')
+            || str_contains($keywords, 'agrément') || str_contains($keywords, 'concession') || str_contains($keywords, 'marché public')
+            || str_contains($keywords, 'adjudication') || str_contains($keywords, 'appel d\'offres') || str_contains($keywords, 'urbanisme')
+            || str_contains($keywords, 'construction') || str_contains($keywords, 'bâtiment') || str_contains($keywords, 'environnement')) {
+            $queries[] = LegalDocument::query()->active()->with('category')
+                ->where(function($q) {
+                    $q->where('title', 'like', '%administratif%')
+                      ->orWhere('title', 'like', '%administration%')
+                      ->orWhere('title', 'like', '%urbanisme%')
+                      ->orWhere('title', 'like', '%environnement%');
+                });
         }
         
         // Execute specific queries

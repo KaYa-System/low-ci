@@ -116,12 +116,20 @@ class LegalDataSeeder extends Seeder
             }
         }
 
-        // Création de quelques documents exemples
+        // Création de documents juridiques étendus
         $this->createConstitution();
         $this->createCodeTravail();
         $this->createCodePenal();
         $this->createCodeNationalite();
         $this->createCodeCivil();
+        $this->createCodeCommerce();
+        $this->createCodeFiscal();
+        $this->createCodeFamille();
+        $this->createLoisEnvironnement();
+        $this->createLoisAdministratives();
+        $this->createLoisSanteTravail();
+        $this->createLoisEducation();
+        $this->createDecretsPratiques();
     }
 
     private function createConstitution(): void
@@ -348,6 +356,14 @@ class LegalDataSeeder extends Seeder
             [
                 'number' => '2',
                 'content' => 'Les biens sont meubles ou immeubles. Sont meubles les biens susceptibles de mouvement propre ou qui peuvent être mus par une force étrangère.'
+            ],
+            [
+                'number' => '3',
+                'content' => 'Le mariage est contracté par deux personnes de sexe différent. Il est conclu publiquement devant l\'officier de l\'état civil.'
+            ],
+            [
+                'number' => '4',
+                'content' => 'La filiation s\'établit par l\'acte de naissance, par la reconnaissance volontaire ou par la décision judiciaire.'
             ]
         ];
 
@@ -359,6 +375,288 @@ class LegalDataSeeder extends Seeder
                 'sort_order' => $index
             ]);
         }
+    }
+
+    private function createCodeCommerce(): void
+    {
+        $category = LegalCategory::firstOrCreate([
+            'name' => 'Code de commerce'
+        ], [
+            'description' => 'Règles applicables au commerce et aux sociétés',
+            'color' => '#0ea5e9',
+            'icon' => 'briefcase',
+        ]);
+
+        $doc = LegalDocument::create([
+            'title' => 'Code de commerce ivoirien (extraits OHADA)',
+            'summary' => 'Dispositions relatives aux sociétés commerciales et au registre du commerce',
+            'content' => 'Le présent Code fixe les règles relatives aux actes de commerce, aux commerçants et aux sociétés commerciales...',
+            'type' => 'code',
+            'reference_number' => 'OHADA-CC',
+            'publication_date' => Carbon::create(2014, 1, 1),
+            'effective_date' => Carbon::create(2014, 1, 1),
+            'journal_officiel' => 'JO de la République de Côte d\'Ivoire',
+            'status' => 'active',
+            'category_id' => $category?->id,
+            'is_featured' => true
+        ]);
+
+        $articles = [
+            [ 'number' => '1', 'title' => 'Actes de commerce par nature', 'content' => 'Sont commerçants ceux qui accomplissent des actes de commerce et en font leur profession habituelle.' ],
+            [ 'number' => '2', 'title' => 'Registre du commerce et du crédit mobilier (RCCM)', 'content' => 'Toute personne physique ou morale exerçant une activité commerciale doit être immatriculée au RCCM.' ],
+            [ 'number' => '3', 'title' => 'Sociétés commerciales', 'content' => 'Les sociétés commerciales comprennent la SA, la SARL, la SNC et la SCS.' ],
+        ];
+
+        foreach ($articles as $index => $articleData) {
+            LegalArticle::create([
+                'number' => $articleData['number'],
+                'title' => $articleData['title'],
+                'content' => $articleData['content'],
+                'document_id' => $doc->id,
+                'sort_order' => $index
+            ]);
+        }
+    }
+
+    private function createCodeFiscal(): void
+    {
+        $category = LegalCategory::firstOrCreate([
+            'name' => 'Code général des impôts'
+        ], [
+            'description' => 'Régime fiscal ivoirien',
+            'color' => '#7c3aed',
+            'icon' => 'calculator',
+        ]);
+
+        $doc = LegalDocument::create([
+            'title' => 'Code général des impôts (extraits)',
+            'summary' => 'Dispositions en matière de TVA, IS et IRPP',
+            'content' => 'Le présent Code fixe les règles relatives à l\'assiette, au recouvrement et au contentieux des impôts...',
+            'type' => 'code',
+            'reference_number' => 'CGI-2019',
+            'publication_date' => Carbon::create(2019, 1, 1),
+            'effective_date' => Carbon::create(2019, 1, 1),
+            'journal_officiel' => 'JO de la République de Côte d\'Ivoire',
+            'status' => 'active',
+            'category_id' => $category?->id
+        ]);
+
+        $articles = [
+            [ 'number' => 'TVA-1', 'title' => 'Champ d\'application de la TVA', 'content' => 'La TVA s\'applique sur les opérations de vente de biens et de services.' ],
+            [ 'number' => 'IS-1', 'title' => 'Impôt sur les sociétés', 'content' => 'L\'IS est dû par les personnes morales réalisant des bénéfices en Côte d\'Ivoire.' ],
+            [ 'number' => 'IRPP-1', 'title' => 'Impôt sur le revenu des personnes physiques', 'content' => 'L\'IRPP est établi d\'après le montant total des revenus perçus par le contribuable.' ],
+        ];
+
+        foreach ($articles as $index => $articleData) {
+            LegalArticle::create([
+                'number' => $articleData['number'],
+                'title' => $articleData['title'],
+                'content' => $articleData['content'],
+                'document_id' => $doc->id,
+                'sort_order' => $index
+            ]);
+        }
+    }
+
+    private function createCodeFamille(): void
+    {
+        $category = LegalCategory::firstOrCreate([
+            'name' => 'Droit de la famille'
+        ], [
+            'description' => 'Mariage, divorce, filiation et successions',
+            'color' => '#be185d',
+            'icon' => 'heart',
+        ]);
+
+        $doc = LegalDocument::create([
+            'title' => 'Code de la famille (extraits)',
+            'summary' => 'Principes relatifs au mariage, filiation et successions',
+            'content' => 'Le présent Code fixe les règles relatives à la famille, la filiation, le mariage et les successions...',
+            'type' => 'code',
+            'reference_number' => 'CF-2016',
+            'publication_date' => Carbon::create(2016, 6, 1),
+            'effective_date' => Carbon::create(2016, 6, 1),
+            'journal_officiel' => 'JO de la République de Côte d\'Ivoire',
+            'status' => 'active',
+            'category_id' => $category?->id,
+            'is_featured' => true
+        ]);
+
+        $articles = [
+            [ 'number' => 'M-1', 'title' => 'Conditions du mariage', 'content' => 'Le mariage est célébré publiquement par l\'officier de l\'état civil.' ],
+            [ 'number' => 'D-1', 'title' => 'Divorce', 'content' => 'Le divorce peut être prononcé pour faute, altération définitive du lien conjugal ou consentement mutuel.' ],
+            [ 'number' => 'S-1', 'title' => 'Successions', 'content' => 'Les successions s\'ouvrent par la mort au dernier domicile du défunt.' ],
+        ];
+
+        foreach ($articles as $index => $articleData) {
+            LegalArticle::create([
+                'number' => $articleData['number'],
+                'title' => $articleData['title'],
+                'content' => $articleData['content'],
+                'document_id' => $doc->id,
+                'sort_order' => $index
+            ]);
+        }
+    }
+
+    private function createLoisEnvironnement(): void
+    {
+        $category = LegalCategory::firstOrCreate([
+            'name' => 'Droit de l\'environnement'
+        ], [
+            'description' => 'Protection de l\'environnement et développement durable',
+            'color' => '#16a34a',
+            'icon' => 'leaf',
+        ]);
+
+        $doc = LegalDocument::create([
+            'title' => 'Loi sur la protection de l\'environnement (extraits)',
+            'summary' => 'Principes généraux et études d\'impact environnemental',
+            'content' => 'La protection de l\'environnement est une obligation de l\'État et des citoyens...',
+            'type' => 'loi',
+            'reference_number' => 'Loi ENV-2018',
+            'publication_date' => Carbon::create(2018, 3, 15),
+            'effective_date' => Carbon::create(2018, 3, 15),
+            'journal_officiel' => 'JO de la République de Côte d\'Ivoire',
+            'status' => 'active',
+            'category_id' => $category?->id
+        ]);
+
+        LegalArticle::create([
+            'number' => 'EIE-1',
+            'title' => 'Études d\'impact environnemental',
+            'content' => 'Les projets susceptibles d\'avoir des effets sur l\'environnement sont soumis à des études d\'impact environnemental.',
+            'document_id' => $doc->id,
+            'sort_order' => 0
+        ]);
+    }
+
+    private function createLoisAdministratives(): void
+    {
+        $category = LegalCategory::firstOrCreate([
+            'name' => 'Droit administratif'
+        ], [
+            'description' => 'Organisation administrative et procédures',
+            'color' => '#334155',
+            'icon' => 'scale',
+        ]);
+
+        $doc = LegalDocument::create([
+            'title' => 'Loi sur les procédures administratives (extraits)',
+            'summary' => 'Règles relatives aux actes administratifs et recours',
+            'content' => 'Les actes administratifs doivent être motivés et peuvent faire l\'objet de recours...',
+            'type' => 'loi',
+            'reference_number' => 'Loi ADM-2017',
+            'publication_date' => Carbon::create(2017, 9, 10),
+            'effective_date' => Carbon::create(2017, 9, 10),
+            'journal_officiel' => 'JO de la République de Côte d\'Ivoire',
+            'status' => 'active',
+            'category_id' => $category?->id
+        ]);
+
+        LegalArticle::create([
+            'number' => 'REC-1',
+            'title' => 'Recours pour excès de pouvoir',
+            'content' => 'Tout administré peut contester devant le juge administratif un acte administratif illégal.',
+            'document_id' => $doc->id,
+            'sort_order' => 0
+        ]);
+    }
+
+    private function createLoisSanteTravail(): void
+    {
+        $category = LegalCategory::firstOrCreate([
+            'name' => 'Santé au travail'
+        ], [
+            'description' => 'Sécurité et santé des travailleurs',
+            'color' => '#ef4444',
+            'icon' => 'shield',
+        ]);
+
+        $doc = LegalDocument::create([
+            'title' => 'Loi sur la santé et sécurité au travail (extraits)',
+            'summary' => 'Obligations de l\'employeur et du travailleur',
+            'content' => 'L\'employeur prend les mesures nécessaires pour assurer la sécurité et protéger la santé des travailleurs...',
+            'type' => 'loi',
+            'reference_number' => 'Loi SAT-2020',
+            'publication_date' => Carbon::create(2020, 2, 20),
+            'effective_date' => Carbon::create(2020, 2, 20),
+            'journal_officiel' => 'JO de la République de Côte d\'Ivoire',
+            'status' => 'active',
+            'category_id' => $category?->id
+        ]);
+
+        LegalArticle::create([
+            'number' => 'SST-1',
+            'title' => 'Équipements de protection individuelle (EPI)',
+            'content' => 'L\'employeur doit fournir gratuitement les EPI adaptés aux risques.',
+            'document_id' => $doc->id,
+            'sort_order' => 0
+        ]);
+    }
+
+    private function createLoisEducation(): void
+    {
+        $category = LegalCategory::firstOrCreate([
+            'name' => 'Droit de l\'éducation'
+        ], [
+            'description' => 'Organisation du système éducatif',
+            'color' => '#f59e0b',
+            'icon' => 'book',
+        ]);
+
+        $doc = LegalDocument::create([
+            'title' => 'Loi d\'orientation de l\'éducation (extraits)',
+            'summary' => 'Principes de l\'éducation nationale en Côte d\'Ivoire',
+            'content' => 'L\'éducation est un droit fondamental garanti par l\'État...',
+            'type' => 'loi',
+            'reference_number' => 'Loi EDU-2015',
+            'publication_date' => Carbon::create(2015, 1, 20),
+            'effective_date' => Carbon::create(2015, 1, 20),
+            'journal_officiel' => 'JO de la République de Côte d\'Ivoire',
+            'status' => 'active',
+            'category_id' => $category?->id
+        ]);
+
+        LegalArticle::create([
+            'number' => 'EDU-1',
+            'title' => 'Obligation scolaire',
+            'content' => 'L\'instruction est obligatoire pour les enfants des deux sexes jusqu\'à l\'âge de 16 ans.',
+            'document_id' => $doc->id,
+            'sort_order' => 0
+        ]);
+    }
+
+    private function createDecretsPratiques(): void
+    {
+        $category = LegalCategory::firstOrCreate([
+            'name' => 'Décrets et arrêtés'
+        ], [
+            'description' => 'Textes réglementaires d\'application',
+            'color' => '#0ea5e9',
+            'icon' => 'file-text',
+        ]);
+
+        $doc = LegalDocument::create([
+            'title' => 'Décret relatif aux marchés publics (extraits)',
+            'summary' => 'Procédures passation et exécution des marchés publics',
+            'content' => 'Le présent décret fixe les procédures applicables aux marchés publics et délégations de service public...',
+            'type' => 'decret',
+            'reference_number' => 'Décret MP-2021-001',
+            'publication_date' => Carbon::create(2021, 5, 10),
+            'effective_date' => Carbon::create(2021, 5, 10),
+            'journal_officiel' => 'JO de la République de Côte d\'Ivoire',
+            'status' => 'active',
+            'category_id' => $category?->id
+        ]);
+
+        LegalArticle::create([
+            'number' => 'MP-1',
+            'title' => 'Appel d\'offres ouvert',
+            'content' => 'L\'appel d\'offres ouvert est la procédure par laquelle toute personne peut soumissionner.',
+            'document_id' => $doc->id,
+            'sort_order' => 0
+        ]);
     }
 
     private function getConstitutionContent(): string
