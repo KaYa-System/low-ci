@@ -242,7 +242,8 @@ class AiChatController extends Controller
         
         // Simple keyword matching - in production, use more sophisticated search
         $query = LegalDocument::query()->active()->with('category');
-        
+
+        // Search for key terms in the message
         if (str_contains($keywords, 'constitution')) {
             $query->where('type', 'constitution');
         } elseif (str_contains($keywords, 'travail')) {
@@ -252,6 +253,15 @@ class AiChatController extends Controller
         } elseif (str_contains($keywords, 'entreprise') || str_contains($keywords, 'commerce')) {
             $query->where('title', 'like', '%commerce%')
                   ->orWhere('title', 'like', '%société%');
+        } elseif (str_contains($keywords, 'nationalité') || str_contains($keywords, 'citoyenneté')) {
+            $query->where('title', 'like', '%nationalité%')
+                  ->orWhere('title', 'like', '%citoyenneté%');
+        } else {
+            // General search for any matching terms
+            $query->where(function ($q) use ($keywords) {
+                $q->where('title', 'like', "%{$keywords}%")
+                  ->orWhere('content', 'like', "%{$keywords}%");
+            });
         }
         
         $results = $query->limit(3)->get();
