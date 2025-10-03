@@ -66,18 +66,92 @@
                                 <!-- Loading Animation -->
                                 <div
                                     v-if="isLoadingResponse"
-                                    class="bg-background/95 backdrop-blur-sm border border-border rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-xl animate-fade-in"
+                                    class="bg-gradient-to-br from-background via-background/95 to-primary/5 backdrop-blur-sm border border-border rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-xl animate-fade-in overflow-hidden relative"
                                 >
-                                    <div class="flex items-center justify-center space-x-4">
-                                        <div class="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center">
-                                            <Bot class="w-4 h-4 text-white animate-pulse" />
+                                    <!-- Background Legal Pattern -->
+                                    <div class="absolute inset-0 opacity-5">
+                                        <div class="absolute top-4 left-4 text-6xl transform rotate-12">⚖️</div>
+                                        <div class="absolute top-8 right-8 text-4xl transform -rotate-12">📜</div>
+                                        <div class="absolute bottom-6 left-8 text-5xl transform rotate-6">🏛️</div>
+                                        <div class="absolute bottom-4 right-4 text-3xl transform -rotate-6">📚</div>
+                                    </div>
+                                    
+                                    <!-- Main Loading Content -->
+                                    <div class="relative z-10">
+                                        <!-- Header with animated avatar -->
+                                        <div class="flex items-center justify-center mb-6">
+                                            <div class="relative">
+                                                <!-- Animated thinking circles -->
+                                                <div class="absolute -top-8 -left-2 w-3 h-3 bg-blue-400 rounded-full animate-ping" style="animation-delay: 0s; animation-duration: 2s;"></div>
+                                                <div class="absolute -top-6 left-4 w-2 h-2 bg-purple-400 rounded-full animate-ping" style="animation-delay: 0.5s; animation-duration: 2s;"></div>
+                                                <div class="absolute -top-4 -left-4 w-1 h-1 bg-pink-400 rounded-full animate-ping" style="animation-delay: 1s; animation-duration: 2s;"></div>
+                                                
+                                                <!-- Main avatar -->
+                                                <div class="w-16 h-16 bg-gradient-to-br from-primary via-purple-600 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-300">
+                                                    <Bot class="w-8 h-8 text-white animate-pulse" style="animation-duration: 1.5s;" />
+                                                </div>
+                                                
+                                                <!-- Pulsing ring -->
+                                                <div class="absolute inset-0 bg-gradient-to-r from-primary to-purple-600 rounded-2xl animate-ping opacity-20" style="animation-duration: 3s;"></div>
+                                            </div>
                                         </div>
-                                        <div class="flex space-x-1">
-                                            <div class="w-2 h-2 rounded-full animate-bounce" style="animation-delay: 0s"></div>
-                                            <div class="w-2 h-2 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-                                            <div class="w-2 h-2 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                        
+                                        <!-- Animated Legal Thinking Process -->
+                                        <div class="text-center space-y-4">
+                                            <h3 class="text-lg lg:text-xl font-bold text-foreground mb-2">🧠 Analyse juridique en cours...</h3>
+                                            
+                                            <!-- Thinking steps animation -->
+                                            <div class="space-y-3 max-w-md mx-auto">
+                                                <div class="flex items-center space-x-3 text-sm text-muted-foreground animate-fade-in" style="animation-delay: 0s;">
+                                                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                                    <span>📖 Consultation des textes législatifs...</span>
+                                                </div>
+                                                <div class="flex items-center space-x-3 text-sm text-muted-foreground animate-fade-in" style="animation-delay: 1s;">
+                                                    <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                                                    <span>⚖️ Analyse de la jurisprudence...</span>
+                                                </div>
+                                                <div class="flex items-center space-x-3 text-sm text-muted-foreground animate-fade-in" style="animation-delay: 2s;">
+                                                    <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                                                    <span>🎯 Recherche de précédents...</span>
+                                                </div>
+                                                <div class="flex items-center space-x-3 text-sm text-muted-foreground animate-fade-in" style="animation-delay: 3s;">
+                                                    <div class="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                                                    <span>✨ Synthèse de la réponse...</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Fun legal quotes rotation -->
+                                            <div class="mt-6 p-4 bg-muted/20 rounded-xl border border-border/30">
+                                                <div class="text-xs italic text-muted-foreground text-center legal-quote-animation">
+                                                    <div class="quote-item" style="animation-delay: 0s;">"La justice est la vérité en action" - Victor Hugo</div>
+                                                    <div class="quote-item" style="animation-delay: 4s;">"Le droit est l'art du bon et de l'équitable" - Ulpien</div>
+                                                    <div class="quote-item" style="animation-delay: 8s;">"Nul n'est censé ignorer la loi" - Principe juridique</div>
+                                                    <div class="quote-item" style="animation-delay: 12s;">"La loi est dure, mais c'est la loi" - Locution latine</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Progress animation -->
+                                            <div class="mt-4 space-y-2">
+                                                <div class="flex justify-center space-x-1">
+                                                    <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+                                                    <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                                                    <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
+                                                    <div class="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 0.6s;"></div>
+                                                    <div class="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 0.8s;"></div>
+                                                </div>
+                                                
+                                                <!-- Fun waiting messages -->
+                                                <div class="text-center space-y-1">
+                                                    <p class="text-xs text-muted-foreground waiting-message" style="animation-delay: 0s;">Patience... les meilleures réponses juridiques prennent du temps ! 🕰️</p>
+                                                    <div class="text-xs text-muted-foreground/80 italic waiting-tips">
+                                                        <div class="tip-item" style="animation-delay: 5s;">💡 Astuce: Les réponses de l'IA sont à titre informatif uniquement</div>
+                                                        <div class="tip-item" style="animation-delay: 10s;">⚖️ Bon à savoir: Consultez toujours un professionnel pour vos cas spécifiques</div>
+                                                        <div class="tip-item" style="animation-delay: 15s;">📚 Le saviez-vous? La base contient plus de 1000 documents juridiques</div>
+                                                        <div class="tip-item" style="animation-delay: 20s;">✨ Info: L'IA analyse plusieurs sources avant de répondre</div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <span class="text-muted-foreground">L'assistant analyse votre question...</span>
                                     </div>
                                 </div>
 

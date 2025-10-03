@@ -473,3 +473,97 @@
         transform: scale(1);
     }
 }
+
+/* Legal Quote Animation */
+.legal-quote-animation {
+    position: relative;
+    height: 2.5rem;
+    overflow: hidden;
+}
+
+.quote-item {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    opacity: 0;
+    animation: quoteRotate 16s infinite;
+}
+
+@keyframes quoteRotate {
+    0%, 20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    25%, 95% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+}
+
+/* Enhanced Fade-in animation for loading steps */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+/* Waiting Messages Animation */
+.waiting-tips {
+    position: relative;
+    height: 1.5rem;
+    overflow: hidden;
+}
+
+.tip-item {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    opacity: 0;
+    animation: tipRotate 20s infinite;
+}
+
+@keyframes tipRotate {
+    0%, 20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translateY(0px);
+    }
+    25%, 95% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translateY(-5px);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translateY(-5px);
+    }
+}
+
+.waiting-message {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+    }
+}
