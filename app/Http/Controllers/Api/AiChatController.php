@@ -160,8 +160,8 @@ class AiChatController extends Controller
             // Prepare conversation messages
             $messages = $this->buildConversationMessages($session, $userMessage);
 
-            // Call Ollama API
-            $response = $this->callHuggingFaceAPI($messages, 'local', $model);
+            // Call Hugging Face API
+            $response = $this->callHuggingFaceAPI($messages, $apiKey, $model);
 
             // Find relevant documents
             $citedDocuments = $this->findRelevantDocuments($userMessage);
