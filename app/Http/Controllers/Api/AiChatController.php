@@ -238,41 +238,99 @@ class AiChatController extends Controller
     private function findRelevantDocuments(string $message): array
     {
         $keywords = strtolower($message);
-        $documents = [];
+        $documents = collect();
         
-        // Simple keyword matching - in production, use more sophisticated search
-        $query = LegalDocument::query()->active()->with('category');
-
-        // Search for key terms in the message
-        if (str_contains($keywords, 'constitution')) {
-            $query->where('type', 'constitution');
-        } elseif (str_contains($keywords, 'travail')) {
-            $query->where('title', 'like', '%travail%');
-        } elseif (str_contains($keywords, 'pénal')) {
-            $query->where('title', 'like', '%pénal%');
-        } elseif (str_contains($keywords, 'entreprise') || str_contains($keywords, 'commerce')) {
-            $query->where('title', 'like', '%commerce%')
-                  ->orWhere('title', 'like', '%société%');
-        } elseif (str_contains($keywords, 'nationalité') || str_contains($keywords, 'citoyenneté')) {
-            $query->where('title', 'like', '%nationalité%')
-                  ->orWhere('title', 'like', '%citoyenneté%');
-        } else {
-            // General search for any matching terms
-            $query->where(function ($q) use ($keywords) {
-                $q->where('title', 'like', "%{$keywords}%")
-                  ->orWhere('content', 'like', "%{$keywords}%");
-            });
+        // Enhanced keyword matching with multiple strategies
+        $queries = [];
+        
+        // Strategy 1: Type-based search with broader matching
+        if (str_contains($keywords, 'constitution') || str_contains($keywords, 'droits de l\'homme') || str_contains($keywords, 'droits fondamentaux')) {
+            $queries[] = LegalDocument::query()->active()->with('category')->where('type', 'constitution');
         }
         
-        $results = $query->limit(3)->get();
+        if (str_contains($keywords, 'travail') || str_contains($keywords, 'employé') || str_contains($keywords, 'salarié') || str_contains($keywords, 'contrat') || str_contains($keywords, 'congé')) {
+            $queries[] = LegalDocument::query()->active()->with('category')->where('title', 'like', '%travail%');
+        }
         
-        return $results->map(function ($doc) {
+        if (str_contains($keywords, 'pénal') || str_contains($keywords, 'crime') || str_contains($keywords, 'délit') || str_contains($keywords, 'infraction')) {
+            $queries[] = LegalDocument::query()->active()->with('category')->where('title', 'like', '%pénal%');
+        }
+        
+        if (str_contains($keywords, 'entreprise') || str_contains($keywords, 'société') || str_contains($keywords, 'commerce') || str_contains($keywords, 'sarl') || str_contains($keywords, 'sa') || str_contains($keywords, 'business')) {
+            $queries[] = LegalDocument::query()->active()->with('category')
+                ->where(function($q) {
+                    $q->where('title', 'like', '%commerce%')
+                      ->orWhere('title', 'like', '%société%')
+                      ->orWhere('title', 'like', '%civil%'); // Code civil contient du droit des sociétés
+                });
+        }
+        
+        if (str_contains($keywords, 'nationalité') || str_contains($keywords, 'citoyenneté') || str_contains($keywords, 'naturalis') || str_contains($keywords, 'ivoirien')) {
+            $queries[] = LegalDocument::query()->active()->with('category')->where('title', 'like', '%nationalité%');
+        }
+        
+        if (str_contains($keywords, 'mariage') || str_contains($keywords, 'divorce') || str_contains($keywords, 'famille') || str_contains($keywords, 'enfant') || str_contains($keywords, 'succession')) {
+            $queries[] = LegalDocument::query()->active()->with('category')
+                ->where(function($q) {
+                    $q->where('title', 'like', '%civil%')
+                      ->orWhere('title', 'like', '%famille%');
+                });
+        }
+        
+        if (str_contains($keywords, 'fiscal') || str_contains($keywords, 'impôt') || str_contains($keywords, 'taxe') || str_contains($keywords, 'douane')) {
+            $queries[] = LegalDocument::query()->active()->with('category')->where('title', 'like', '%fiscal%');
+        }
+        
+        // Execute specific queries
+        foreach ($queries as $query) {
+            $results = $query->limit(2)->get();
+            $documents = $documents->merge($results);
+        }
+        
+        // Strategy 2: General keyword search if not enough results
+        if ($documents->count() < 2) {
+            // Split message into individual words for broader search
+            $words = explode(' ', $keywords);
+            $importantWords = array_filter($words, function($word) {
+                return strlen($word) > 3 && !in_array($word, ['dans', 'pour', 'avec', 'sans', 'être', 'avoir', 'faire', 'dire', 'aller', 'voir', 'savoir', 'pouvoir', 'falloir', 'vouloir', 'venir', 'devoir', 'prendre', 'donner']);
+            });
+            
+            if (!empty($importantWords)) {
+                $generalQuery = LegalDocument::query()->active()->with('category')
+                    ->where(function ($q) use ($importantWords) {
+                        foreach ($importantWords as $word) {
+                            $q->orWhere('title', 'like', "%{$word}%")
+                              ->orWhere('content', 'like', "%{$word}%")
+                              ->orWhere('summary', 'like', "%{$word}%");
+                        }
+                    })
+                    ->orderBy('is_featured', 'desc')
+                    ->limit(3);
+                
+                $generalResults = $generalQuery->get();
+                $documents = $documents->merge($generalResults);
+            }
+        }
+        
+        // Strategy 3: Fallback to featured documents if still no results
+        if ($documents->isEmpty()) {
+            $documents = LegalDocument::query()->active()->with('category')
+                ->where('is_featured', true)
+                ->limit(3)
+                ->get();
+        }
+        
+        // Remove duplicates and limit to 5 results
+        $uniqueDocuments = $documents->unique('id')->take(5);
+        
+        return $uniqueDocuments->map(function ($doc) {
             return [
                 'id' => $doc->id,
                 'title' => $doc->title,
                 'slug' => $doc->slug,
                 'type' => $doc->type,
-                'reference_number' => $doc->reference_number
+                'reference_number' => $doc->reference_number,
+                'category' => $doc->category ? $doc->category->name : null
             ];
         })->toArray();
     }
