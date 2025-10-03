@@ -111,18 +111,6 @@ class AiChatController extends Controller
             'data' => $assistantMessage->load('session'),
             'message' => 'Message envoyé avec succès'
         ]);
-
-        // Auto-generate session title if first message
-        if ($session->messages()->count() === 2) { // User + assistant message
-            $session->update([
-                'title' => $session->generateTitle()
-            ]);
-        }
-
-        return response()->json([
-            'data' => $assistantMessage->load('session'),
-            'message' => 'Message envoyé avec succès'
-        ]);
     }
 
     /**
@@ -330,9 +318,12 @@ class AiChatController extends Controller
                 'json' => [
                     'messages' => $messages,
                     'model' => $model,
-                    'stream' => $stream
+                    'stream' => $stream,
+                    'temperature' => 0.7,
+                    'max_tokens' => 1000,
+                    'top_p' => 0.9
                 ],
-                'timeout' => 60,
+                'timeout' => 180, // Increased timeout for 8B model
                 'stream' => $stream // Enable streaming in Guzzle
             ]);
 
@@ -340,7 +331,9 @@ class AiChatController extends Controller
             $result = json_decode($response->getBody(), true);
 
             if (isset($result['choices'][0]['message']['content'])) {
-                return $result['choices'][0]['message']['content'];
+                $content = $result['choices'][0]['message']['content'];
+                // Clean DeepSeek thinking tags and improve formatting
+                return $this->cleanDeepSeekResponse($content);
             }
 
             return "Désolé, je n'ai pas pu générer une réponse appropriée.";
@@ -348,5 +341,25 @@ class AiChatController extends Controller
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     * Clean DeepSeek response by removing thinking tags and improving formatting
+     */
+    private function cleanDeepSeekResponse(string $content): string
+    {
+        // Remove <think> tags and their content (DeepSeek reasoning process)
+        $content = preg_replace('/<think>.*?<\/think>/s', '', $content);
+        
+        // Clean up extra whitespace and normalize line breaks
+        $content = preg_replace('/\n{3,}/', "\n\n", $content);
+        $content = trim($content);
+        
+        // If content is empty or too short, provide a fallback
+        if (empty($content) || strlen($content) < 20) {
+            return "Je suis désolé, je n'ai pas pu générer une réponse appropriée à votre question sur la législation ivoirienne. Pouvez-vous reformuler votre question ?";
+        }
+        
+        return $content;
     }
 }

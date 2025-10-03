@@ -123,15 +123,18 @@ Document types: `loi`, `decret`, `arrete`, `ordonnance`, `constitution`, `code`,
 - View counting and featured document support
 
 ### AI Integration
-- Hugging Face API with fallback to mock responses
-- Session-based chat history
-- Context-aware responses using legal document content
-- Configurable models (DialoGPT-medium recommended)
+- **Ollama Support**: Pre-configured for local DeepSeek R1 model at `http://72.61.21.143:11434`
+- **Hugging Face API**: Alternative cloud-based AI with fallback to mock responses
+- **Session-based chat history** with persistent conversation context
+- **Context-aware responses** using legal document content for citations
+- **Configurable models**: DeepSeek R1 1.5B (Ollama) or DialoGPT (Hugging Face)
 
 ## Important Development Notes
 
 ### Environment Configuration
-- **Required**: `HUGGINGFACE_API_KEY` for AI features (falls back to mock data)
+- **AI Provider**: Pre-configured for Ollama at `72.61.21.143:11434` (DeepSeek R1 1.5B model)
+- **Fallback AI**: `HUGGINGFACE_API_KEY` for cloud-based AI (falls back to mock data if neither available)
+- **AI Models**: `deepseek-r1:1.5b` (Ollama) or `microsoft/DialoGPT-medium` (Hugging Face)
 - **Database**: Uses SQLite by default, easily switchable to MySQL
 - **Scout**: Currently configured for database search, can be switched to Meilisearch
 
