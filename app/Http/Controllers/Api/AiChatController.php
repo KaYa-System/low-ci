@@ -329,9 +329,8 @@ class AiChatController extends Controller
         try {
             $stream = config('services.huggingface.stream', false);
 
-            $response = $client->post("https://router.huggingface.co/v1/chat/completions", [
+            $response = $client->post("http://72.61.21.143:11434/v1/chat/completions", [
                 'headers' => [
-                    'Authorization' => "Bearer {$apiKey}",
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [

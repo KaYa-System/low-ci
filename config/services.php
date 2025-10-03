@@ -37,7 +37,7 @@ return [
 
     'huggingface' => [
         'api_key' => env('HUGGINGFACE_API_KEY'),
-        'model' => env('HUGGINGFACE_MODEL', 'microsoft/DialoGPT-medium'),
+        'model' => env('HUGGINGFACE_MODEL', 'deepseek-r1:1.5b'),
         'stream' => env('HUGGINGFACE_STREAM', false),
     ],
 
