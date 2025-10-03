@@ -225,11 +225,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Debug info (remove in production) -->
-                                            <div v-if="aiResponse.message.metadata" class="text-xs text-gray-500 mb-2">
-                                                Debug: {{ JSON.stringify(aiResponse.message.metadata.cited_documents) }}
-                                            </div>
-                                            
                                             <!-- Referenced Documents -->
                                             <div
                                                 v-if="aiResponse.message.metadata && aiResponse.message.metadata.cited_documents && aiResponse.message.metadata.cited_documents.length > 0"
