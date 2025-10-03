@@ -555,18 +555,57 @@
     }
 }
 
-.waiting-message {
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 0.8;
+    .waiting-message {
+        animation: pulse 2s ease-in-out infinite;
     }
-    50% {
-        opacity: 1;
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 0.8;
+        }
+        50% {
+            opacity: 1;
+        }
     }
-}
+    
+    /* Mobile optimizations for AI Response */
+    @media (max-width: 768px) {
+        .ai-response-fixed {
+            margin: 0.5rem;
+            max-height: 85vh;
+        }
+        
+        .ai-response-content {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+        }
+        
+        .ai-response-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .ai-response-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 2px;
+        }
+        
+        /* Better touch targets on mobile */
+        .touch-target {
+            min-height: 48px;
+            min-width: 48px;
+        }
+        
+        /* Improved button spacing */
+        .glass-footer {
+            padding: 0.75rem;
+        }
+        
+        /* Better text legibility */
+        .prose {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+    }
 
 /* Liquid Glass Effect for Footer */
 .glass-footer {

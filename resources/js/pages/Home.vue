@@ -61,8 +61,8 @@
                             <!-- Background Overlay -->
                             <div class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"></div>
                             
-                            <!-- Response Container -->
-                            <div class="fixed inset-x-4 bottom-4 lg:inset-x-8 lg:bottom-8 max-w-4xl mx-auto z-40">
+                            <!-- Response Container - Mobile optimized -->
+                            <div class="fixed inset-x-2 bottom-2 md:inset-x-4 md:bottom-4 lg:inset-x-8 lg:bottom-8 max-w-4xl mx-auto z-40">
                                 <!-- Loading Animation -->
                                 <div
                                     v-if="isLoadingResponse"
@@ -158,12 +158,12 @@
                                 <!-- AI Response -->
                                 <div
                                     v-else-if="showAiResponse && aiResponse"
-                                    class="bg-gradient-to-b from-background via-background to-muted/20 backdrop-blur-md border border-border/60 rounded-2xl lg:rounded-3xl shadow-2xl animate-slide-up overflow-hidden max-h-[80vh] flex flex-col ai-response-fixed"
+                                    class="bg-gradient-to-b from-background via-background to-muted/20 backdrop-blur-md border border-border/60 rounded-xl md:rounded-2xl lg:rounded-3xl shadow-2xl animate-slide-up overflow-hidden max-h-[85vh] md:max-h-[80vh] flex flex-col ai-response-fixed"
                                     dir="ltr"
                                     @click.stop
                                 >
                                     <!-- Header with gradient background -->
-                                    <div class="bg-gradient-to-r from-primary/5 via-purple-500/5 to-pink-500/5 px-4 lg:px-8 py-4 lg:py-6 border-b border-border/30">
+                                    <div class="bg-gradient-to-r from-primary/5 via-purple-500/5 to-pink-500/5 px-3 md:px-6 lg:px-8 py-3 md:py-4 lg:py-6 border-b border-border/30">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
                                                 <div class="relative flex-shrink-0">
@@ -196,7 +196,7 @@
                                     </div>
 
                                     <!-- Scrollable Content -->
-                                    <div class="flex-1 overflow-y-auto ai-response-content px-4 lg:px-8 py-4 lg:py-6">
+                                    <div class="flex-1 overflow-y-auto ai-response-content px-3 md:px-6 lg:px-8 py-3 md:py-4 lg:py-6">
                                         <div class="space-y-4 lg:space-y-6">
                                             <!-- User Question -->
                                             <div class="bg-gradient-to-r from-muted/40 to-muted/20 rounded-xl lg:rounded-2xl p-4 lg:p-5 border border-border/40">
@@ -228,28 +228,29 @@
                                             <!-- Referenced Documents -->
                                             <div
                                                 v-if="aiResponse.message.metadata && aiResponse.message.metadata.cited_documents && aiResponse.message.metadata.cited_documents.length > 0"
-                                                class="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-2xl p-5 border border-blue-200/30 dark:border-blue-800/30"
+                                                class="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-xl md:rounded-2xl p-3 md:p-5 border border-blue-200/30 dark:border-blue-800/30"
                                             >
-                                                <div class="flex items-center space-x-2 mb-4">
-                                                    <div class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                <div class="flex items-center space-x-2 mb-3 md:mb-4">
+                                                    <div class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
                                                         <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
                                                         </svg>
                                                     </div>
                                                     <p class="text-sm font-semibold text-blue-700 dark:text-blue-300">Documents référencés</p>
                                                 </div>
-                                                <div class="grid gap-3 sm:grid-cols-2">
+                                                <!-- Mobile: 1 column, Medium+: 2 columns -->
+                                                <div class="grid gap-2 md:gap-3 md:grid-cols-2">
                                                     <a
                                                         v-for="doc in aiResponse.message.metadata.cited_documents"
                                                         :key="doc.id"
                                                         :href="`/documents/${doc.slug}`"
-                                                        class="group block p-4 bg-white/60 dark:bg-card/60 rounded-xl border border-border/40 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+                                                        class="group block p-3 md:p-4 bg-white/60 dark:bg-card/60 rounded-lg md:rounded-xl border border-border/40 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md transition-all duration-200 active:scale-[0.98] md:hover:scale-[1.02]"
                                                     >
-                                                        <div class="flex items-start space-x-3">
-                                                            <span :class="`inline-flex w-3 h-3 rounded-full mt-1.5 flex-shrink-0 ${getTypeColor(doc.type)}`"></span>
+                                                        <div class="flex items-start space-x-2 md:space-x-3">
+                                                            <span :class="`inline-flex w-3 h-3 rounded-full mt-1 flex-shrink-0 ${getTypeColor(doc.type)}`"></span>
                                                             <div class="flex-1 min-w-0">
-                                                                <p class="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">{{ doc.title }}</p>
-                                                                <p class="text-xs text-muted-foreground mt-1 font-mono">{{ doc.reference_number }}</p>
+                                                                <p class="text-xs md:text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight md:leading-normal">{{ doc.title }}</p>
+                                                                <p class="text-xs text-muted-foreground mt-1 font-mono truncate">{{ doc.reference_number }}</p>
                                                             </div>
                                                         </div>
                                                     </a>
@@ -259,32 +260,34 @@
                                     </div>
                                     
                                     <!-- Fixed Actions Footer with Liquid Glass Effect -->
-                                    <div class="flex-shrink-0 px-4 lg:px-8 py-4 border-t border-border/30 bg-background/20 backdrop-blur-xl backdrop-saturate-150 glass-footer">
-                                        <div class="flex flex-col gap-4">
-                                            <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                                    <div class="flex-shrink-0 px-3 md:px-6 lg:px-8 py-3 md:py-4 border-t border-border/30 bg-background/20 backdrop-blur-xl backdrop-saturate-150 glass-footer">
+                                        <div class="flex flex-col gap-3 md:gap-4">
+                                            <!-- Mobile: Stack buttons vertically, Desktop: Horizontal -->
+                                            <div class="flex flex-col md:flex-row gap-2 md:gap-3 md:items-center">
                                                 <Button
                                                     @click="continueToChat"
                                                     variant="default"
                                                     size="sm"
-                                                    class="w-full sm:w-auto rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 touch-target"
+                                                    class="w-full md:flex-1 lg:w-auto rounded-lg md:rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 touch-target py-3 md:py-2"
                                                 >
-                                                    <MessageCircle class="w-4 h-4 mr-2" />
-                                                    <span class="text-sm lg:text-base">Continuer la conversation</span>
+                                                    <MessageCircle class="w-4 h-4 mr-2 flex-shrink-0" />
+                                                    <span class="text-sm md:text-sm lg:text-base font-medium truncate">Continuer la conversation</span>
                                                 </Button>
                                                 <Button
                                                     @click="copyResponse"
                                                     variant="outline"
                                                     size="sm"
-                                                    class="w-full sm:w-auto rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target"
+                                                    class="w-full md:flex-1 lg:w-auto rounded-lg md:rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target py-3 md:py-2"
                                                 >
-                                                    <Copy class="w-4 h-4 mr-2" />
-                                                    <span class="text-sm lg:text-base">Copier</span>
+                                                    <Copy class="w-4 h-4 mr-2 flex-shrink-0" />
+                                                    <span class="text-sm md:text-sm lg:text-base font-medium">Copier la réponse</span>
                                                 </Button>
                                             </div>
-                                            <div class="text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-full">
+                                            <!-- Disclaimer avec meilleur responsive -->
+                                            <div class="text-xs text-muted-foreground bg-muted/50 px-2 md:px-3 py-2 rounded-lg md:rounded-full">
                                                 <div class="flex items-center justify-center space-x-1 text-center">
                                                     <div class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
-                                                    <span class="leading-tight">Réponse générée par IA - Vérifiez auprès d'un professionnel</span>
+                                                    <span class="leading-tight text-center">Réponse générée par IA - Vérifiez auprès d'un professionnel</span>
                                                 </div>
                                             </div>
                                         </div>
