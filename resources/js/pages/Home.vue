@@ -57,153 +57,160 @@
                         </div>
 
                         <!-- AI Response Section -->
-                        <div
-                            v-if="isLoadingResponse || showAiResponse"
-                            class="mt-6 lg:mt-8 max-w-4xl mx-auto px-4"
-                        >
-                            <!-- Loading Animation -->
-                            <div
-                                v-if="isLoadingResponse"
-                                class="bg-background/95 backdrop-blur-sm border border-border rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-xl animate-fade-in"
-                            >
-                                <div class="flex items-center justify-center space-x-4">
-                                    <div class="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center">
-                                        <Bot class="w-4 h-4 text-white animate-pulse" />
-                                    </div>
-                                    <div class="flex space-x-1">
-                                        <div class="w-2 h-2 rounded-full animate-bounce" style="animation-delay: 0s"></div>
-                                        <div class="w-2 h-2 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-                                        <div class="w-2 h-2 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-                                    </div>
-                                    <span class="text-muted-foreground">L'assistant analyse votre question...</span>
-                                </div>
-                            </div>
-
-                            <!-- AI Response -->
-                            <div
-                                v-else-if="showAiResponse && aiResponse"
-                                class="bg-gradient-to-b from-background via-background to-muted/20 backdrop-blur-md border border-border/60 rounded-2xl lg:rounded-3xl shadow-2xl animate-slide-up overflow-hidden mobile-scroll"
-                                dir="ltr"
-                            >
-                                <!-- Header with gradient background -->
-                                <div class="bg-gradient-to-r from-primary/5 via-purple-500/5 to-pink-500/5 px-4 lg:px-8 py-4 lg:py-6 border-b border-border/30">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
-                                            <div class="relative flex-shrink-0">
-                                                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-primary via-purple-600 to-pink-500 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg">
-                                                    <Bot class="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-                                                </div>
-                                                <div class="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-green-400 rounded-full border-2 border-background animate-pulse"></div>
-                                            </div>
-                                            <div class="min-w-0 flex-1">
-                                                <h3 class="text-lg lg:text-xl font-bold text-foreground truncate">Assistant IA Juridique</h3>
-                                                <p class="text-xs lg:text-sm text-muted-foreground font-medium">Réponse intelligente et précise</p>
-                                                <div v-if="aiResponse.message.metadata && aiResponse.message.metadata.stream" class="mt-1">
-                                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                         <div class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1.5 animate-pulse"></div>
-                                                         Streaming activé
-                                                     </span>
-                                                </div>
-                                            </div>
+                        <div v-if="isLoadingResponse || showAiResponse">
+                            <!-- Background Overlay -->
+                            <div class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30" @click="closeAiResponse"></div>
+                            
+                            <!-- Response Container -->
+                            <div class="fixed inset-x-4 bottom-4 lg:inset-x-8 lg:bottom-8 max-w-4xl mx-auto z-40">
+                                <!-- Loading Animation -->
+                                <div
+                                    v-if="isLoadingResponse"
+                                    class="bg-background/95 backdrop-blur-sm border border-border rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-xl animate-fade-in"
+                                >
+                                    <div class="flex items-center justify-center space-x-4">
+                                        <div class="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center">
+                                            <Bot class="w-4 h-4 text-white animate-pulse" />
                                         </div>
-                                        <Button
-                                            @click="closeAiResponse"
-                                            variant="ghost"
-                                            size="sm"
-                                            class="rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target flex-shrink-0"
-                                            :aria-label="'Fermer la réponse'"
-                                        >
-                                            <X class="w-4 h-4 lg:w-5 lg:h-5" />
-                                        </Button>
+                                        <div class="flex space-x-1">
+                                            <div class="w-2 h-2 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                                            <div class="w-2 h-2 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                                            <div class="w-2 h-2 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                        </div>
+                                        <span class="text-muted-foreground">L'assistant analyse votre question...</span>
                                     </div>
                                 </div>
 
-                                <!-- Content -->
-                                <div class="px-4 lg:px-8 py-4 lg:py-6 space-y-4 lg:space-y-6">
-                                    <!-- User Question -->
-                                    <div class="bg-gradient-to-r from-muted/40 to-muted/20 rounded-xl lg:rounded-2xl p-4 lg:p-5 border border-border/40">
-                                        <div class="flex items-start space-x-3">
-                                            <div class="w-6 h-6 lg:w-8 lg:h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                <div class="w-2 h-2 lg:w-3 lg:h-3 bg-primary rounded-full"></div>
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Votre question</p>
-                                                <p class="text-sm lg:text-base text-foreground font-medium leading-relaxed mobile-select">{{ aiResponse.query }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- AI Answer -->
-                                    <div class="bg-card/50 rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-border/30 shadow-sm">
-                                        <div class="flex items-start space-x-3 lg:space-x-4">
-                                            <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-primary to-purple-600 rounded-lg lg:rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-                                                <Bot class="w-4 h-4 lg:w-5 lg:h-5 text-white" />
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <div class="prose prose-sm max-w-none text-foreground leading-relaxed mobile-select">
-                                                    <div v-html="formatAiMessage(aiResponse.message.content)" class="text-sm lg:text-base text-justify"></div>
+                                <!-- AI Response -->
+                                <div
+                                    v-else-if="showAiResponse && aiResponse"
+                                    class="bg-gradient-to-b from-background via-background to-muted/20 backdrop-blur-md border border-border/60 rounded-2xl lg:rounded-3xl shadow-2xl animate-slide-up overflow-hidden max-h-[80vh] flex flex-col ai-response-fixed"
+                                    dir="ltr"
+                                >
+                                    <!-- Header with gradient background -->
+                                    <div class="bg-gradient-to-r from-primary/5 via-purple-500/5 to-pink-500/5 px-4 lg:px-8 py-4 lg:py-6 border-b border-border/30">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
+                                                <div class="relative flex-shrink-0">
+                                                    <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-primary via-purple-600 to-pink-500 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg">
+                                                        <Bot class="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                                                    </div>
+                                                    <div class="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-green-400 rounded-full border-2 border-background animate-pulse"></div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Referenced Documents -->
-                                    <div
-                                        v-if="aiResponse.message.metadata && aiResponse.message.metadata.cited_documents && aiResponse.message.metadata.cited_documents.length > 0"
-                                        class="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-2xl p-5 border border-blue-200/30 dark:border-blue-800/30"
-                                    >
-                                        <div class="flex items-center space-x-2 mb-4">
-                                            <div class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
-                                                </svg>
-                                            </div>
-                                            <p class="text-sm font-semibold text-blue-700 dark:text-blue-300">Documents référencés</p>
-                                        </div>
-                                        <div class="grid gap-3 sm:grid-cols-2">
-                                            <a
-                                                v-for="doc in aiResponse.message.metadata.cited_documents"
-                                                :key="doc.id"
-                                                :href="`/documents/${doc.slug}`"
-                                                class="group block p-4 bg-white/60 dark:bg-card/60 rounded-xl border border-border/40 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
-                                            >
-                                                <div class="flex items-start space-x-3">
-                                                    <span :class="`inline-flex w-3 h-3 rounded-full mt-1.5 flex-shrink-0 ${getTypeColor(doc.type)}`"></span>
-                                                    <div class="flex-1 min-w-0">
-                                                        <p class="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">{{ doc.title }}</p>
-                                                        <p class="text-xs text-muted-foreground mt-1 font-mono">{{ doc.reference_number }}</p>
+                                                <div class="min-w-0 flex-1">
+                                                    <h3 class="text-lg lg:text-xl font-bold text-foreground truncate">Assistant IA Juridique</h3>
+                                                    <p class="text-xs lg:text-sm text-muted-foreground font-medium">Réponse intelligente et précise</p>
+                                                    <div v-if="aiResponse.message.metadata && aiResponse.message.metadata.stream" class="mt-1">
+                                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            <div class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1.5 animate-pulse"></div>
+                                                            Streaming activé
+                                                        </span>
                                                     </div>
                                                 </div>
-                                            </a>
+                                            </div>
+                                            <Button
+                                                @click="closeAiResponse"
+                                                variant="ghost"
+                                                size="sm"
+                                                class="rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target flex-shrink-0"
+                                                :aria-label="'Fermer la réponse'"
+                                            >
+                                                <X class="w-4 h-4 lg:w-5 lg:h-5" />
+                                            </Button>
                                         </div>
                                     </div>
 
-                                    <!-- Actions Footer -->
-                                    <div class="flex flex-col gap-4 pt-4 border-t border-border/30">
-                                        <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
-                                            <Button
-                                                @click="continueToChat"
-                                                variant="default"
-                                                size="sm"
-                                                class="w-full sm:w-auto rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 touch-target"
+                                    <!-- Scrollable Content -->
+                                    <div class="flex-1 overflow-y-auto ai-response-content px-4 lg:px-8 py-4 lg:py-6">
+                                        <div class="space-y-4 lg:space-y-6">
+                                            <!-- User Question -->
+                                            <div class="bg-gradient-to-r from-muted/40 to-muted/20 rounded-xl lg:rounded-2xl p-4 lg:p-5 border border-border/40">
+                                                <div class="flex items-start space-x-3">
+                                                    <div class="w-6 h-6 lg:w-8 lg:h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                        <div class="w-2 h-2 lg:w-3 lg:h-3 bg-primary rounded-full"></div>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Votre question</p>
+                                                        <p class="text-sm lg:text-base text-foreground font-medium leading-relaxed mobile-select">{{ aiResponse.query }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- AI Answer -->
+                                            <div class="bg-card/50 rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-border/30 shadow-sm">
+                                                <div class="flex items-start space-x-3 lg:space-x-4">
+                                                    <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-primary to-purple-600 rounded-lg lg:rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                                                        <Bot class="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <div class="prose prose-sm max-w-none text-foreground leading-relaxed mobile-select">
+                                                            <div v-html="formatAiMessage(aiResponse.message.content)" class="text-sm lg:text-base text-justify"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Referenced Documents -->
+                                            <div
+                                                v-if="aiResponse.message.metadata && aiResponse.message.metadata.cited_documents && aiResponse.message.metadata.cited_documents.length > 0"
+                                                class="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-2xl p-5 border border-blue-200/30 dark:border-blue-800/30"
                                             >
-                                                <MessageCircle class="w-4 h-4 mr-2" />
-                                                <span class="text-sm lg:text-base">Continuer la conversation</span>
-                                            </Button>
-                                            <Button
-                                                @click="copyResponse"
-                                                variant="outline"
-                                                size="sm"
-                                                class="w-full sm:w-auto rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target"
-                                            >
-                                                <Copy class="w-4 h-4 mr-2" />
-                                                <span class="text-sm lg:text-base">Copier</span>
-                                            </Button>
+                                                <div class="flex items-center space-x-2 mb-4">
+                                                    <div class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                        <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                    </div>
+                                                    <p class="text-sm font-semibold text-blue-700 dark:text-blue-300">Documents référencés</p>
+                                                </div>
+                                                <div class="grid gap-3 sm:grid-cols-2">
+                                                    <a
+                                                        v-for="doc in aiResponse.message.metadata.cited_documents"
+                                                        :key="doc.id"
+                                                        :href="`/documents/${doc.slug}`"
+                                                        class="group block p-4 bg-white/60 dark:bg-card/60 rounded-xl border border-border/40 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+                                                    >
+                                                        <div class="flex items-start space-x-3">
+                                                            <span :class="`inline-flex w-3 h-3 rounded-full mt-1.5 flex-shrink-0 ${getTypeColor(doc.type)}`"></span>
+                                                            <div class="flex-1 min-w-0">
+                                                                <p class="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">{{ doc.title }}</p>
+                                                                <p class="text-xs text-muted-foreground mt-1 font-mono">{{ doc.reference_number }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-full">
-                                            <div class="flex items-center justify-center space-x-1 text-center">
-                                                <div class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
-                                                <span class="leading-tight">Réponse générée par IA - Vérifiez auprès d'un professionnel</span>
+                                    </div>
+                                    
+                                    <!-- Fixed Actions Footer -->
+                                    <div class="flex-shrink-0 px-4 lg:px-8 py-4 border-t border-border/30 bg-background/80 backdrop-blur-sm">
+                                        <div class="flex flex-col gap-4">
+                                            <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                                                <Button
+                                                    @click="continueToChat"
+                                                    variant="default"
+                                                    size="sm"
+                                                    class="w-full sm:w-auto rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 touch-target"
+                                                >
+                                                    <MessageCircle class="w-4 h-4 mr-2" />
+                                                    <span class="text-sm lg:text-base">Continuer la conversation</span>
+                                                </Button>
+                                                <Button
+                                                    @click="copyResponse"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    class="w-full sm:w-auto rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target"
+                                                >
+                                                    <Copy class="w-4 h-4 mr-2" />
+                                                    <span class="text-sm lg:text-base">Copier</span>
+                                                </Button>
+                                            </div>
+                                            <div class="text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-full">
+                                                <div class="flex items-center justify-center space-x-1 text-center">
+                                                    <div class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
+                                                    <span class="leading-tight">Réponse générée par IA - Vérifiez auprès d'un professionnel</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

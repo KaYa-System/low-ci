@@ -401,6 +401,38 @@
             background: rgba(0, 0, 0, 0.2);
             border-radius: 2px;
         }
+        
+        .mobile-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+    }
+    
+    /* Fixed AI Response Section */
+    .ai-response-fixed {
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border);
+    }
+    
+    .ai-response-content {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+    }
+    
+    .ai-response-content::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .ai-response-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .ai-response-content::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+    }
+    
+    .ai-response-content::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.2);
     }
 }
 
