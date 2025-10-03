@@ -316,7 +316,7 @@
 
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { Scale, Search, Eye, MessageCircle, Briefcase, Shield, Users, Calculator, Bot, X, Copy } from 'lucide-vue-next'
 import { marked } from 'marked'
@@ -490,6 +490,8 @@ const closeAiResponse = () => {
     showAiResponse.value = false
     aiResponse.value = null
     searchQuery.value = ''
+    // Re-enable body scroll
+    document.body.style.overflow = ''
 }
 
 const continueToChat = () => {
@@ -518,9 +520,26 @@ const formatAiMessage = (content: string) => {
     return marked.parse(content)
 }
 
+// Watch for popup state changes to control body scroll
+watch([showAiResponse, isLoadingResponse], ([showResponse, isLoading]) => {
+    if (showResponse || isLoading) {
+        // Disable body scroll when popup is visible
+        document.body.style.overflow = 'hidden'
+    } else {
+        // Re-enable body scroll when popup is closed
+        document.body.style.overflow = ''
+    }
+})
+
 // Load data on mount
 onMounted(() => {
     loadData()
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+    // Make sure to re-enable scroll when component is unmounted
+    document.body.style.overflow = ''
 })
 </script>
 
