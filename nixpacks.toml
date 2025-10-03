@@ -1,8 +1,8 @@
 [phases.setup]
-nixPkgs = ["...", "nodejs_20"]
+nixPkgs = ["nodejs_20", "php.withExtensions (pe: pe.enabled ++ [])", "nginx", "libmysqlclient", "phpPackages.composer"]
 
 [phases.install]
-cmds = ["npm ci"]
+cmds = ["mkdir -p /var/log/nginx && mkdir -p /var/cache/nginx", "composer install --ignore-platform-reqs", "npm ci"]
 
 [phases.build]
 cmds = ["npm run build"]
