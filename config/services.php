@@ -37,7 +37,7 @@ return [
 
     'huggingface' => [
         'api_key' => env('HUGGINGFACE_API_KEY'),
-        'model' => env('HUGGINGFACE_MODEL', 'deepseek-r1:1.5b'),
+        'model' => env('HUGGINGFACE_MODEL', 'deepseek-ai/DeepSeek-V3.2-Exp:novita'),
         'stream' => env('HUGGINGFACE_STREAM', false),
     ],
 

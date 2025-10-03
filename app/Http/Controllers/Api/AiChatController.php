@@ -338,8 +338,9 @@ SUJETS COUVERTS :
         try {
             $stream = config('services.huggingface.stream', false);
 
-            $response = $client->post("http://72.61.21.143:11434/v1/chat/completions", [
+            $response = $client->post("https://router.huggingface.co/v1/chat/completions", [
                 'headers' => [
+                    'Authorization' => "Bearer {$apiKey}",
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
@@ -349,7 +350,7 @@ SUJETS COUVERTS :
                     'temperature' => 0.7,
                     'max_tokens' => 1000
                 ],
-                'timeout' => 180, // Increased timeout for 8B model
+                'timeout' => 60, // Increased timeout for 8B model
                 'stream' => $stream // Enable streaming in Guzzle
             ]);
 
