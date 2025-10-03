@@ -60,7 +60,7 @@
                         <div v-if="isLoadingResponse || showAiResponse">
                             <!-- Background Overlay -->
                             <div class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"></div>
-                            
+
                             <!-- Response Container - Mobile optimized -->
                             <div class="fixed inset-x-2 bottom-2 md:inset-x-4 md:bottom-4 lg:inset-x-8 lg:bottom-8 max-w-4xl mx-auto z-40">
                                 <!-- Loading Animation -->
@@ -75,7 +75,7 @@
                                         <div class="absolute bottom-6 left-8 text-5xl transform rotate-6">🏛️</div>
                                         <div class="absolute bottom-4 right-4 text-3xl transform -rotate-6">📚</div>
                                     </div>
-                                    
+
                                     <!-- Main Loading Content -->
                                     <div class="relative z-10">
                                         <!-- Header with animated avatar -->
@@ -85,21 +85,21 @@
                                                 <div class="absolute -top-8 -left-2 w-3 h-3 bg-blue-400 rounded-full animate-ping" style="animation-delay: 0s; animation-duration: 2s;"></div>
                                                 <div class="absolute -top-6 left-4 w-2 h-2 bg-purple-400 rounded-full animate-ping" style="animation-delay: 0.5s; animation-duration: 2s;"></div>
                                                 <div class="absolute -top-4 -left-4 w-1 h-1 bg-pink-400 rounded-full animate-ping" style="animation-delay: 1s; animation-duration: 2s;"></div>
-                                                
+
                                                 <!-- Main avatar -->
                                                 <div class="w-16 h-16 bg-gradient-to-br from-primary via-purple-600 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-300">
                                                     <Bot class="w-8 h-8 text-white animate-pulse" style="animation-duration: 1.5s;" />
                                                 </div>
-                                                
+
                                                 <!-- Pulsing ring -->
                                                 <div class="absolute inset-0 bg-gradient-to-r from-primary to-purple-600 rounded-2xl animate-ping opacity-20" style="animation-duration: 3s;"></div>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Animated Legal Thinking Process -->
                                         <div class="text-center space-y-4">
                                             <h3 class="text-lg lg:text-xl font-bold text-foreground mb-2">🧠 Analyse juridique en cours...</h3>
-                                            
+
                                             <!-- Thinking steps animation -->
                                             <div class="space-y-3 max-w-md mx-auto">
                                                 <div class="flex items-center space-x-3 text-sm text-muted-foreground animate-fade-in" style="animation-delay: 0s;">
@@ -119,7 +119,7 @@
                                                     <span>✨ Synthèse de la réponse...</span>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Fun legal quotes rotation -->
                                             <div class="mt-6 p-4 bg-muted/20 rounded-xl border border-border/30">
                                                 <div class="text-xs italic text-muted-foreground text-center legal-quote-animation">
@@ -129,7 +129,7 @@
                                                     <div class="quote-item" style="animation-delay: 12s;">"La loi est dure, mais c'est la loi" - Locution latine</div>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Progress animation -->
                                             <div class="mt-4 space-y-2">
                                                 <div class="flex justify-center space-x-1">
@@ -139,7 +139,7 @@
                                                     <div class="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 0.6s;"></div>
                                                     <div class="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 0.8s;"></div>
                                                 </div>
-                                                
+
                                                 <!-- Fun waiting messages -->
                                                 <div class="text-center space-y-1">
                                                     <p class="text-xs text-muted-foreground waiting-message" style="animation-delay: 0s;">Patience... les meilleures réponses juridiques prennent du temps ! 🕰️</p>
@@ -258,29 +258,29 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Fixed Actions Footer with Liquid Glass Effect -->
-                                    <div class="flex-shrink-0 px-3 md:px-6 lg:px-8 py-3 md:py-4 border-t border-border/30 bg-background/20 backdrop-blur-xl backdrop-saturate-150 glass-footer">
-                                        <div class="flex flex-col gap-3 md:gap-4">
+
+                                    <!-- Discrete Actions Footer -->
+                                    <div class="flex-shrink-0 px-3 md:px-6 lg:px-8 py-2 md:py-3 border-t border-border/20">
+                                        <div class="flex flex-col gap-2 md:gap-3">
                                             <!-- Mobile: Stack buttons vertically, Desktop: Horizontal -->
-                                            <div class="flex flex-col md:flex-row gap-2 md:gap-3 md:items-center">
+                                            <div class="flex flex-col md:flex-row gap-2 md:gap-3 md:items-center md:justify-end">
                                                 <Button
                                                     @click="continueToChat"
-                                                    variant="default"
+                                                    variant="ghost"
                                                     size="sm"
-                                                    class="w-full md:flex-1 lg:w-auto rounded-lg md:rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 touch-target py-3 md:py-2"
+                                                    class="md:w-auto text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2"
                                                 >
-                                                    <MessageCircle class="w-4 h-4 mr-2 flex-shrink-0" />
-                                                    <span class="text-sm md:text-sm lg:text-base font-medium truncate">Continuer la conversation</span>
+                                                    <MessageCircle class="w-3 h-3 mr-1.5" />
+                                                    <span>Continuer</span>
                                                 </Button>
                                                 <Button
                                                     @click="copyResponse"
-                                                    variant="outline"
+                                                    variant="ghost"
                                                     size="sm"
-                                                    class="w-full md:flex-1 lg:w-auto rounded-lg md:rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target py-3 md:py-2"
+                                                    class="md:w-auto text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2"
                                                 >
-                                                    <Copy class="w-4 h-4 mr-2 flex-shrink-0" />
-                                                    <span class="text-sm md:text-sm lg:text-base font-medium">Copier la réponse</span>
+                                                    <Copy class="w-3 h-3 mr-1.5" />
+                                                    <span>Copier</span>
                                                 </Button>
                                             </div>
                                             <!-- Disclaimer avec meilleur responsive -->
