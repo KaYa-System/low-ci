@@ -165,21 +165,15 @@ class AiChatController extends Controller
     private function generateAiResponse(string $userMessage, AiChatSession $session): array
     {
         try {
-            // Use Hugging Face Inference API with a legal-focused model
-            $apiKey = config('services.huggingface.api_key');
+            // Use local Ollama API with DeepSeek model
             $model = config('services.huggingface.model');
             $stream = config('services.huggingface.stream');
-
-            if (!$apiKey) {
-                // Fallback to mock response if no API key
-                return $this->generateMockResponse($userMessage, $session);
-            }
 
             // Prepare conversation messages
             $messages = $this->buildConversationMessages($session, $userMessage);
 
-            // Call Hugging Face API
-            $response = $this->callHuggingFaceAPI($messages, $apiKey, $model);
+            // Call Ollama API
+            $response = $this->callHuggingFaceAPI($messages, 'local', $model);
 
             // Find relevant documents
             $citedDocuments = $this->findRelevantDocuments($userMessage);
