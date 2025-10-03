@@ -9,6 +9,7 @@ use App\Models\LegalDocument;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AiChatController extends Controller
 {
@@ -43,14 +44,20 @@ class AiChatController extends Controller
     }
 
     /**
-     * Get user's chat sessions
+     * Get user's chat sessions (or public sessions if not authenticated)
      */
     public function getUserSessions(): JsonResponse
     {
-        $sessions = AiChatSession::query()
-            ->where('user_id', auth()->id())
-            ->orderBy('last_activity', 'desc')
-            ->get();
+        $query = AiChatSession::query();
+
+        if (auth()->check()) {
+            $query->where('user_id', auth()->id());
+        } else {
+            // For non-auth users, return sessions without user_id (public)
+            $query->whereNull('user_id');
+        }
+
+        $sessions = $query->orderBy('last_activity', 'desc')->get();
 
         return response()->json([
             'data' => $sessions,
@@ -84,10 +91,25 @@ class AiChatController extends Controller
         // Create assistant message
         $assistantMessage = AiChatMessage::create([
             'session_id' => $session->id,
-            'role' => 'assistant', 
+            'role' => 'assistant',
             'content' => $aiResponse['content'],
             'metadata' => $aiResponse['metadata'] ?? null,
             'sent_at' => now()
+        ]);
+
+        // Update session activity
+        $session->updateActivity();
+
+        // Auto-generate session title if first message
+        if ($session->messages()->count() === 2) { // User + assistant message
+            $session->update([
+                'title' => $session->generateTitle()
+            ]);
+        }
+
+        return response()->json([
+            'data' => $assistantMessage->load('session'),
+            'message' => 'Message envoyé avec succès'
         ]);
 
         // Auto-generate session title if first message
@@ -138,16 +160,56 @@ class AiChatController extends Controller
     }
 
     /**
-     * Generate AI response (mock implementation)
+     * Generate AI response using Hugging Face API
      */
     private function generateAiResponse(string $userMessage, AiChatSession $session): array
     {
+        try {
+            // Use Hugging Face Inference API with a legal-focused model
+            $apiKey = config('services.huggingface.api_key');
+            $model = config('services.huggingface.model');
+            $stream = config('services.huggingface.stream');
+
+            if (!$apiKey) {
+                // Fallback to mock response if no API key
+                return $this->generateMockResponse($userMessage, $session);
+            }
+
+            // Prepare conversation messages
+            $messages = $this->buildConversationMessages($session, $userMessage);
+
+            // Call Hugging Face API
+            $response = $this->callHuggingFaceAPI($messages, $apiKey, $model);
+
+            // Find relevant documents
+            $citedDocuments = $this->findRelevantDocuments($userMessage);
+
+            return [
+                'content' => $response,
+                'metadata' => [
+                    'cited_documents' => $citedDocuments,
+                    'model' => $model
+                ]
+            ];
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Hugging Face API error: ' . $e->getMessage());
+            // Fallback to mock response on error
+            return $this->generateMockResponse($userMessage, $session);
+        }
+    }
+
+    /**
+     * Generate mock AI response (fallback)
+     */
+    private function generateMockResponse(string $userMessage, AiChatSession $session): array
+    {
         // Mock AI responses based on keywords for demonstration
         $response = $this->getMockResponse($userMessage);
-        
+
         // Find relevant documents
         $citedDocuments = $this->findRelevantDocuments($userMessage);
-        
+
         return [
             'content' => $response,
             'metadata' => [
@@ -220,5 +282,78 @@ class AiChatController extends Controller
                 'reference_number' => $doc->reference_number
             ];
         })->toArray();
+    }
+
+    /**
+     * Build conversation messages for context
+     */
+    private function buildConversationMessages(AiChatSession $session, string $newMessage): array
+    {
+        $messages = $session->messages()
+            ->orderBy('sent_at')
+            ->take(10) // Limit context to last 10 messages
+            ->get();
+
+        $conversationMessages = [];
+
+        // Add system message for Ivoirian context
+        $conversationMessages[] = [
+            'role' => 'system',
+            'content' => 'Vous êtes un assistant juridique spécialisé exclusivement dans la législation ivoirienne. Répondez uniquement en vous basant sur les lois, la Constitution et les textes juridiques de la Côte d\'Ivoire. Si la question n\'est pas liée au droit ivoirien, rappelez votre spécialité et réservez-vous le droit de ne pas répondre, en redirigeant vers des questions pertinentes sur la législation ivoirienne.'
+        ];
+
+        foreach ($messages as $message) {
+            $role = $message->role === 'user' ? 'user' : 'assistant';
+            $conversationMessages[] = [
+                'role' => $role,
+                'content' => $message->content
+            ];
+        }
+
+        // Add the new user message
+        $conversationMessages[] = [
+            'role' => 'user',
+            'content' => $newMessage
+        ];
+
+        return $conversationMessages;
+    }
+
+    /**
+     * Call Hugging Face Chat Completions API
+     */
+    private function callHuggingFaceAPI(array $messages, string $apiKey, string $model): string
+    {
+        $client = new \GuzzleHttp\Client();
+
+        try {
+            $stream = config('services.huggingface.stream', false);
+
+            $response = $client->post("https://router.huggingface.co/v1/chat/completions", [
+                'headers' => [
+                    'Authorization' => "Bearer {$apiKey}",
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'messages' => $messages,
+                    'model' => $model,
+                    'stream' => $stream
+                ],
+                'timeout' => 60,
+                'stream' => $stream // Enable streaming in Guzzle
+            ]);
+
+            // Handle response
+            $result = json_decode($response->getBody(), true);
+
+            if (isset($result['choices'][0]['message']['content'])) {
+                return $result['choices'][0]['message']['content'];
+            }
+
+            return "Désolé, je n'ai pas pu générer une réponse appropriée.";
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 }

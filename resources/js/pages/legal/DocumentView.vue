@@ -120,20 +120,28 @@
                 </div>
               </div>
               
-              <div class="ml-6 flex flex-col gap-2">
-                <button 
-                  @click="askAiAboutDocument"
-                  class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
-                >
-                  <MessageCircle class="w-4 h-4 mr-2" />
-                  Poser une question
-                </button>
-                
-                <button class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">
-                  <Share class="w-4 h-4 mr-2" />
-                  Partager
-                </button>
-              </div>
+               <div class="ml-6 flex flex-col gap-2">
+                 <button
+                   @click="viewPdf"
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                 >
+                   <FileText class="w-4 h-4 mr-2" />
+                   Voir le PDF
+                 </button>
+
+                 <button
+                   @click="askAiAboutDocument"
+                   class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
+                 >
+                   <MessageCircle class="w-4 h-4 mr-2" />
+                   Poser une question
+                 </button>
+
+                 <button class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">
+                   <Share class="w-4 h-4 mr-2" />
+                   Partager
+                 </button>
+               </div>
             </div>
           </div>
 
@@ -290,8 +298,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
-import { 
-  ChevronRight, Calendar, Clock, Eye, MessageCircle, Share, X
+import {
+  ChevronRight, Calendar, Clock, Eye, MessageCircle, Share, X, FileText
 } from 'lucide-vue-next'
 
 // Props
@@ -338,6 +346,10 @@ const formatDate = (dateString: string) => {
 const formatContent = (content: string) => {
   if (!content) return ''
   return content.replace(/\n/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;')
+}
+
+const viewPdf = () => {
+  router.visit(`/pdf/${props.documentSlug}`)
 }
 
 const askAiAboutDocument = () => {

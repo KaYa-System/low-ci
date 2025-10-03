@@ -17,6 +17,8 @@ Une application web moderne pour consulter et comprendre la législation de la R
 - Réponses contextualisées basées sur les textes officiels
 - Références automatiques aux documents pertinents
 - Interface conversationnelle moderne
+- **IA Open Source** : Utilise Hugging Face API (modèles DialoGPT)
+- **Fallback intelligent** : Réponses mockées si l'API n'est pas configurée
 
 ### 📊 **Base de données complète**
 - Constitution de 2016
@@ -79,6 +81,13 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
+# Configuration de l'IA (Hugging Face)
+# 1. Créez un compte sur https://huggingface.co
+# 2. Générez une clé API dans vos paramètres
+# 3. Ajoutez dans votre .env :
+echo "HUGGINGFACE_API_KEY=votre_clé_api_ici" >> .env
+echo "HUGGINGFACE_MODEL=microsoft/DialoGPT-medium" >> .env
+
 # Base de données
 php artisan migrate
 php artisan db:seed
@@ -99,6 +108,38 @@ php artisan legislation:scrape --source=mock --limit=10
 php artisan legislation:scrape --source=gouv --limit=100
 php artisan legislation:scrape --source=jo --limit=50
 ```
+
+### Configuration de l'IA
+
+L'assistant IA utilise l'API Hugging Face pour fournir des réponses intelligentes. Sans configuration, l'application utilise des réponses mockées.
+
+#### 1. Créer un compte Hugging Face
+- Rendez-vous sur [https://huggingface.co](https://huggingface.co)
+- Créez un compte gratuit
+- Vérifiez votre email
+
+#### 2. Générer une clé API
+- Allez dans vos paramètres (Settings)
+- Onglet "Access Tokens"
+- Créez un nouveau token avec le rôle "Read"
+- Copiez la clé API
+
+#### 3. Configurer l'application
+Ajoutez dans votre fichier `.env` :
+```env
+HUGGINGFACE_API_KEY=votre_clé_api_ici
+HUGGINGFACE_MODEL=microsoft/DialoGPT-medium
+```
+
+#### 4. Modèles recommandés
+- `microsoft/DialoGPT-medium` - Conversation générale (recommandé)
+- `microsoft/DialoGPT-large` - Plus performant mais plus lent
+- `facebook/blenderbot-400M-distill` - Alternative conversationnelle
+
+#### 5. Tester l'IA
+- Posez une question depuis la page d'accueil
+- Vérifiez que la réponse apparaît avec animation
+- Les réponses incluent des références aux documents légaux
 
 ## 📡 API Documentation
 

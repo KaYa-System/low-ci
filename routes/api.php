@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DocumentsController;
 use App\Http\Controllers\Api\LegalCategoryController;
 use App\Http\Controllers\Api\LegalDocumentController;
 use App\Http\Controllers\Api\SearchController;
@@ -31,18 +32,24 @@ Route::prefix('legal')->group(function () {
     Route::get('search/advanced', [SearchController::class, 'advanced']);
 });
 
-// Routes pour l'IA Chat (authentifiées optionnellement)
+// Routes pour l'IA Chat
 Route::prefix('ai')->group(function () {
     Route::post('chat/sessions', [AiChatController::class, 'createSession']);
     Route::get('chat/sessions/{session:session_id}', [AiChatController::class, 'getSession']);
     Route::post('chat/sessions/{session:session_id}/messages', [AiChatController::class, 'sendMessage']);
     Route::get('chat/sessions/{session:session_id}/messages', [AiChatController::class, 'getMessages']);
+    Route::get('chat/sessions', [AiChatController::class, 'getUserSessions']);
+});
+
+// Routes d'administration
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    Route::apiResource('documents', DocumentsController::class);
+    Route::post('documents/{document}/duplicate', [DocumentsController::class, 'duplicate']);
 });
 
 // Routes authentifiées
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('ai')->group(function () {
-        Route::get('chat/sessions', [AiChatController::class, 'getUserSessions']);
         Route::delete('chat/sessions/{session:session_id}', [AiChatController::class, 'deleteSession']);
     });
 });

@@ -244,6 +244,12 @@ import {
   ThumbsUp, ThumbsDown, Plus, History
 } from 'lucide-vue-next'
 
+interface Props {
+  initialSessionId?: string
+}
+
+const props = defineProps<Props>()
+
 // Reactive data
 const messages = ref<any[]>([])
 const currentMessage = ref('')
@@ -433,8 +439,16 @@ watch(currentMessage, () => {
 })
 
 // Load data on mount
-onMounted(() => {
-  loadChatHistory()
+onMounted(async () => {
+  await loadChatHistory()
+
+  // Load initial session if provided
+  if (props.initialSessionId) {
+    const session = chatHistory.value.find(s => s.session_id === props.initialSessionId)
+    if (session) {
+      await loadChatSession(session)
+    }
+  }
 
   // Focus input
   nextTick(() => {

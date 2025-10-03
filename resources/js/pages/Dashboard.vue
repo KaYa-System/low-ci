@@ -1,12 +1,118 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { BarChart3, Users, FileText, TrendingUp, Activity, Clock, ChevronRight } from 'lucide-vue-next';
+import { Head, router } from '@inertiajs/vue3';
+import { Activity, BarChart3, ChevronRight, Clock, FileText, TrendingUp, Users } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+
+// Props pour recevoir les données du backend
+const props = defineProps<{
+    isAdmin?: boolean;
+    adminStats?: any;
+    documents?: any[];
+}>();
+
+// État local
+const activeTab = ref('overview');
+
+// Admin state
+const adminDocuments = ref<any[]>([]);
+const adminStatsLocal = ref({
+    total: 0,
+    published: 0,
+    drafts: 0,
+    totalViews: 0,
+});
+const searchQuery = ref('');
+const selectedType = ref('');
+const selectedStatus = ref('');
+const showCreateModal = ref(false);
+const editingDocument = ref<any>(null);
+const saving = ref(false);
+
+const form = ref({
+    title: '',
+    reference_number: '',
+    type: 'loi',
+    category_id: '',
+    status: 'draft',
+    publication_date: '',
+    effective_date: '',
+    summary: '',
+    content: '',
+    pdf_file: null,
+    pdf_file_name: '',
+});
+
+const categories = ref<any[]>([]);
+const pdfInput = ref<any>(null);
+
+// Données mockées pour la démo
+
+// Statistiques utilisateur normal
+const userStats = [
+    {
+        title: 'Documents Consultés',
+        value: '24',
+        change: '+12%',
+        trend: 'up',
+        icon: FileText,
+        color: 'bg-blue-500',
+    },
+    {
+        title: 'Questions Posées',
+        value: '8',
+        change: '+25%',
+        trend: 'up',
+        icon: Activity,
+        color: 'bg-green-500',
+    },
+    {
+        title: 'Temps Moyen',
+        value: '3.2 min',
+        change: '-8%',
+        trend: 'down',
+        icon: Clock,
+        color: 'bg-purple-500',
+    },
+];
+
+const recentActivities = [
+    { title: 'Nouvelle procédure ajoutée', time: 'Il y a 5 min', type: 'success' },
+    { title: 'Rapport mensuel généré', time: 'Il y a 15 min', type: 'info' },
+    { title: 'Utilisateur connecté', time: 'Il y a 23 min', type: 'default' },
+    { title: 'Sauvegarde complétée', time: 'Il y a 1h', type: 'success' },
+];
+
+// Computed
+const isAdmin = computed(() => props.isAdmin || false);
+
+// Admin computed
+const filteredDocuments = computed(() => {
+    let filtered = adminDocuments.value;
+
+    if (searchQuery.value) {
+        filtered = filtered.filter(
+            (doc) =>
+                doc.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                doc.reference_number?.toLowerCase().includes(searchQuery.value.toLowerCase()),
+        );
+    }
+
+    if (selectedType.value) {
+        filtered = filtered.filter((doc) => doc.type === selectedType.value);
+    }
+
+    if (selectedStatus.value) {
+        filtered = filtered.filter((doc) => doc.status === selectedStatus.value);
+    }
+
+    return filtered;
+});
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -15,6 +121,222 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Admin methods
+const loadAdminData = async () => {
+    if (!isAdmin.value) return;
+
+    try {
+        const response = await fetch('/api/admin/documents');
+        const data = await response.json();
+        adminDocuments.value = data.data || [];
+        adminStatsLocal.value = {
+            total: adminDocuments.value.length,
+            published: adminDocuments.value.filter((d) => d.status === 'published').length,
+            drafts: adminDocuments.value.filter((d) => d.status === 'draft').length,
+            totalViews: adminDocuments.value.reduce((sum, d) => sum + (d.views_count || 0), 0),
+        };
+    } catch (error) {
+        console.error('Error loading admin data:', error);
+    }
+};
+
+const loadCategories = async () => {
+    try {
+        const response = await fetch('/api/legal/categories');
+        const data = await response.json();
+        categories.value = data.data || [];
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+};
+
+const getTypeColor = (type: string) => {
+    const colors = {
+        constitution: 'bg-red-500',
+        loi: 'bg-blue-500',
+        decret: 'bg-green-500',
+        arrete: 'bg-yellow-500',
+        code: 'bg-purple-500',
+        ordonnance: 'bg-indigo-500',
+    };
+    return colors[type as keyof typeof colors] || 'bg-gray-500';
+};
+
+const getTypeBadgeColor = (type: string) => {
+    const colors = {
+        constitution: 'bg-red-100 text-red-800',
+        loi: 'bg-blue-100 text-blue-800',
+        decret: 'bg-green-100 text-green-800',
+        arrete: 'bg-yellow-100 text-yellow-800',
+        code: 'bg-purple-100 text-purple-800',
+        ordonnance: 'bg-indigo-100 text-indigo-800',
+    };
+    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+};
+
+const getStatusBadgeColor = (status: string) => {
+    const colors = {
+        published: 'bg-green-100 text-green-800',
+        draft: 'bg-yellow-100 text-yellow-800',
+        archived: 'bg-gray-100 text-gray-800',
+    };
+    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+};
+
+const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
+};
+
+const viewDocument = (doc: any) => {
+    router.visit(`/documents/${doc.slug}`);
+};
+
+const editDocument = (doc: any) => {
+    editingDocument.value = doc;
+    form.value = {
+        title: doc.title,
+        reference_number: doc.reference_number || '',
+        type: doc.type,
+        category_id: doc.category_id || '',
+        status: doc.status,
+        publication_date: doc.publication_date ? doc.publication_date.split('T')[0] : '',
+        effective_date: doc.effective_date ? doc.effective_date.split('T')[0] : '',
+        summary: doc.summary || '',
+        content: doc.content || '',
+        pdf_file: null,
+        pdf_file_name: doc.pdf_file_name || '',
+    };
+};
+
+const duplicateDocument = async (doc: any) => {
+    if (confirm('Êtes-vous sûr de vouloir dupliquer ce document ?')) {
+        try {
+            const response = await fetch(`/api/admin/documents/${doc.id}/duplicate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+            });
+
+            if (response.ok) {
+                await loadAdminData();
+                alert('Document dupliqué avec succès !');
+            } else {
+                throw new Error('Erreur lors de la duplication');
+            }
+        } catch (error) {
+            console.error('Error duplicating document:', error);
+            alert('Erreur lors de la duplication du document');
+        }
+    }
+};
+
+const deleteDocument = async (doc: any) => {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer "${doc.title}" ? Cette action est irréversible.`)) {
+        try {
+            const response = await fetch(`/api/admin/documents/${doc.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+            });
+
+            if (response.ok) {
+                await loadAdminData();
+                alert('Document supprimé avec succès !');
+            } else {
+                throw new Error('Erreur lors de la suppression');
+            }
+        } catch (error) {
+            console.error('Error deleting document:', error);
+            alert('Erreur lors de la suppression du document');
+        }
+    }
+};
+
+const saveDocument = async () => {
+    saving.value = true;
+
+    try {
+        const formData = new FormData();
+
+        Object.keys(form.value).forEach((key) => {
+            if (form.value[key] !== null && form.value[key] !== '') {
+                formData.append(key, form.value[key]);
+            }
+        });
+
+        const url = editingDocument.value ? `/api/admin/documents/${editingDocument.value.id}` : '/api/admin/documents';
+
+        const method = editingDocument.value ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+            body: formData,
+        });
+
+        if (response.ok) {
+            await loadAdminData();
+            closeModal();
+            alert(editingDocument.value ? 'Document modifié avec succès !' : 'Document créé avec succès !');
+        } else {
+            const error = await response.json();
+            throw new Error(error.message || 'Erreur lors de la sauvegarde');
+        }
+    } catch (error) {
+        console.error('Error saving document:', error);
+        alert('Erreur lors de la sauvegarde du document');
+    } finally {
+        saving.value = false;
+    }
+};
+
+const handlePdfUpload = (event: any) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+        form.value.pdf_file = file;
+        form.value.pdf_file_name = file.name;
+    } else {
+        alert('Veuillez sélectionner un fichier PDF valide.');
+        event.target.value = '';
+    }
+};
+
+const closeModal = () => {
+    showCreateModal.value = false;
+    editingDocument.value = null;
+    form.value = {
+        title: '',
+        reference_number: '',
+        type: 'loi',
+        category_id: '',
+        status: 'draft',
+        publication_date: '',
+        effective_date: '',
+        summary: '',
+        content: '',
+        pdf_file: null,
+        pdf_file_name: '',
+    };
+    if (pdfInput.value) {
+        pdfInput.value.value = '';
+    }
+};
+
+// Load admin data on mount if admin
+if (isAdmin.value) {
+    loadAdminData();
+    loadCategories();
+}
+
 const stats = [
     {
         title: 'Utilisateurs Actifs',
@@ -22,7 +344,7 @@ const stats = [
         change: '+12%',
         trend: 'up',
         icon: Users,
-        color: 'bg-blue-500'
+        color: 'bg-blue-500',
     },
     {
         title: 'Procédures Traitées',
@@ -30,7 +352,7 @@ const stats = [
         change: '+8%',
         trend: 'up',
         icon: FileText,
-        color: 'bg-green-500'
+        color: 'bg-green-500',
     },
     {
         title: 'Taux de Satisfaction',
@@ -38,15 +360,8 @@ const stats = [
         change: '+2.1%',
         trend: 'up',
         icon: TrendingUp,
-        color: 'bg-purple-500'
-    }
-];
-
-const recentActivities = [
-    { title: 'Nouvelle procédure ajoutée', time: 'Il y a 5 min', type: 'success' },
-    { title: 'Rapport mensuel généré', time: 'Il y a 15 min', type: 'info' },
-    { title: 'Utilisateur connecté', time: 'Il y a 23 min', type: 'default' },
-    { title: 'Sauvegarde complétée', time: 'Il y a 1h', type: 'success' }
+        color: 'bg-purple-500',
+    },
 ];
 </script>
 
@@ -59,7 +374,7 @@ const recentActivities = [
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
-                    <p class="text-muted-foreground mt-1">Aperçu de vos activités et performances</p>
+                    <p class="mt-1 text-muted-foreground">Aperçu de vos activités et performances</p>
                 </div>
                 <div class="flex gap-3">
                     <Button variant="outline" class="gap-2">
@@ -73,26 +388,63 @@ const recentActivities = [
                 </div>
             </div>
 
+            <!-- Admin Tabs -->
+            <div v-if="isAdmin" class="border-b border-border">
+                <nav class="-mb-px flex space-x-8">
+                    <button
+                        @click="activeTab = 'overview'"
+                        :class="[
+                            'border-b-2 px-1 py-2 text-sm font-medium whitespace-nowrap',
+                            activeTab === 'overview'
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
+                        ]"
+                    >
+                        Aperçu
+                    </button>
+                    <button
+                        @click="activeTab = 'admin'"
+                        :class="[
+                            'border-b-2 px-1 py-2 text-sm font-medium whitespace-nowrap',
+                            activeTab === 'admin'
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
+                        ]"
+                    >
+                        Gestion des Documents
+                    </button>
+                </nav>
+            </div>
+            <div class="flex gap-3">
+                <Button variant="outline" class="gap-2">
+                    <BarChart3 class="h-4 w-4" />
+                    Rapports
+                </Button>
+                <Button class="gap-2">
+                    <Activity class="h-4 w-4" />
+                    Nouvelle Analyse
+                </Button>
+            </div>
+        </div>
+
+        <!-- Overview Tab Content -->
+        <div v-if="!isAdmin || activeTab === 'overview'">
             <!-- Statistiques principales -->
             <div class="grid gap-6 md:grid-cols-3">
-                <Card
-                    v-for="stat in stats"
-                    :key="stat.title"
-                    class="group relative overflow-hidden hover-lift glass-card border-border/50"
-                >
+                <Card v-for="stat in stats" :key="stat.title" class="group hover-lift glass-card relative overflow-hidden border-border/50">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-4">
                         <CardTitle class="text-sm font-medium text-muted-foreground">
                             {{ stat.title }}
                         </CardTitle>
-                        <div :class="`p-2 rounded-lg ${stat.color} bg-opacity-10`">
+                        <div :class="`rounded-lg p-2 ${stat.color} bg-opacity-10`">
                             <component :is="stat.icon" :class="`h-5 w-5 ${stat.color.replace('bg-', 'text-')}`" />
                         </div>
                     </CardHeader>
                     <CardContent>
                         <div class="text-3xl font-bold">{{ stat.value }}</div>
-                        <p class="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                        <p class="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                             <TrendingUp class="h-3 w-3 text-green-500" />
-                            <span class="text-green-500 font-medium">{{ stat.change }}</span>
+                            <span class="font-medium text-green-500">{{ stat.change }}</span>
                             depuis le mois dernier
                         </p>
                     </CardContent>
@@ -102,7 +454,7 @@ const recentActivities = [
             <!-- Contenu principal -->
             <div class="grid gap-6 lg:grid-cols-3">
                 <!-- Graphique principal -->
-                <Card class="lg:col-span-2 glass-card border-border/50">
+                <Card class="glass-card border-border/50 lg:col-span-2">
                     <CardHeader>
                         <CardTitle class="flex items-center gap-2">
                             <BarChart3 class="h-5 w-5 text-primary" />
@@ -110,11 +462,13 @@ const recentActivities = [
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="h-[300px] flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 rounded-lg border border-border/30">
+                        <div
+                            class="flex h-[300px] items-center justify-center rounded-lg border border-border/30 bg-gradient-to-br from-primary/5 to-secondary/5"
+                        >
                             <div class="text-center">
-                                <BarChart3 class="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                                <p class="text-muted-foreground font-medium">Graphique des performances</p>
-                                <p class="text-sm text-muted-foreground mt-1">Intégration en cours...</p>
+                                <BarChart3 class="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                                <p class="font-medium text-muted-foreground">Graphique des performances</p>
+                                <p class="mt-1 text-sm text-muted-foreground">Intégration en cours...</p>
                             </div>
                         </div>
                     </CardContent>
@@ -132,28 +486,23 @@ const recentActivities = [
                         <div
                             v-for="activity in recentActivities"
                             :key="activity.title"
-                            class="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer group"
+                            class="group flex cursor-pointer items-start gap-3 rounded-lg p-3 transition-colors hover:bg-accent/50"
                         >
                             <div class="mt-1">
-                                <Badge
-                                    :variant="activity.type as any"
-                                    class="h-2 w-2 p-0 rounded-full"
-                                />
+                                <Badge :variant="activity.type as any" class="h-2 w-2 rounded-full p-0" />
                             </div>
                             <div class="flex-1 space-y-1">
-                                <p class="text-sm font-medium group-hover:text-primary transition-colors">
+                                <p class="text-sm font-medium transition-colors group-hover:text-primary">
                                     {{ activity.title }}
                                 </p>
-                                <p class="text-xs text-muted-foreground flex items-center gap-1">
+                                <p class="flex items-center gap-1 text-xs text-muted-foreground">
                                     <Clock class="h-3 w-3" />
                                     {{ activity.time }}
                                 </p>
                             </div>
-                            <ChevronRight class="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <ChevronRight class="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
                         </div>
-                        <Button variant="ghost" class="w-full mt-4">
-                            Voir toutes les activités
-                        </Button>
+                        <Button variant="ghost" class="mt-4 w-full"> Voir toutes les activités </Button>
                     </CardContent>
                 </Card>
             </div>
@@ -165,25 +514,348 @@ const recentActivities = [
                 </CardHeader>
                 <CardContent>
                     <div class="grid gap-4 md:grid-cols-4">
-                        <Button variant="outline" class="h-20 flex-col gap-2 hover-lift">
+                        <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
                             <FileText class="h-6 w-6" />
                             <span class="text-sm">Nouvelle Procédure</span>
                         </Button>
-                        <Button variant="outline" class="h-20 flex-col gap-2 hover-lift">
+                        <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
                             <Users class="h-6 w-6" />
                             <span class="text-sm">Gérer Utilisateurs</span>
                         </Button>
-                        <Button variant="outline" class="h-20 flex-col gap-2 hover-lift">
+                        <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
                             <BarChart3 class="h-6 w-6" />
                             <span class="text-sm">Générer Rapport</span>
                         </Button>
-                        <Button variant="outline" class="h-20 flex-col gap-2 hover-lift">
+                        <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
                             <Activity class="h-6 w-6" />
                             <span class="text-sm">Analyser Données</span>
                         </Button>
                     </div>
                 </CardContent>
             </Card>
+        </div>
+
+        <!-- Admin Tab Content -->
+        <div v-if="isAdmin && activeTab === 'admin'">
+            <!-- Admin Header -->
+            <div class="mb-8 rounded-2xl bg-white p-8 shadow-sm">
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900">Gestion des Documents</h2>
+                        <p class="mt-2 text-gray-600">Gérez la constitution, les lois et autres documents juridiques</p>
+                    </div>
+                    <button
+                        @click="showCreateModal = true"
+                        class="flex items-center rounded-xl bg-indigo-600 px-6 py-3 text-white transition-colors hover:bg-indigo-700"
+                    >
+                        <Plus class="mr-2 h-5 w-5" />
+                        Nouveau document
+                    </button>
+                </div>
+
+                <!-- Admin Stats -->
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
+                    <div class="rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 p-6">
+                        <div class="flex items-center">
+                            <FileText class="mr-3 h-8 w-8 text-blue-600" />
+                            <div>
+                                <p class="text-2xl font-bold text-blue-900">{{ adminStatsLocal.total }}</p>
+                                <p class="text-sm text-blue-700">Total documents</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl bg-gradient-to-r from-green-50 to-green-100 p-6">
+                        <div class="flex items-center">
+                            <CheckCircle class="mr-3 h-8 w-8 text-green-600" />
+                            <div>
+                                <p class="text-2xl font-bold text-green-900">{{ adminStatsLocal.published }}</p>
+                                <p class="text-sm text-green-700">Publiés</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl bg-gradient-to-r from-yellow-50 to-yellow-100 p-6">
+                        <div class="flex items-center">
+                            <Clock class="mr-3 h-8 w-8 text-yellow-600" />
+                            <div>
+                                <p class="text-2xl font-bold text-yellow-900">{{ adminStatsLocal.drafts }}</p>
+                                <p class="text-sm text-yellow-700">Brouillons</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl bg-gradient-to-r from-purple-50 to-purple-100 p-6">
+                        <div class="flex items-center">
+                            <Eye class="mr-3 h-8 w-8 text-purple-600" />
+                            <div>
+                                <p class="text-2xl font-bold text-purple-900">{{ adminStatsLocal.totalViews }}</p>
+                                <p class="text-sm text-purple-700">Vues totales</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Search -->
+            <div class="mb-8 rounded-2xl bg-white p-6 shadow-sm">
+                <div class="flex flex-col gap-4 lg:flex-row">
+                    <div class="flex-1">
+                        <input
+                            v-model="searchQuery"
+                            type="text"
+                            placeholder="Rechercher des documents..."
+                            class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                        />
+                    </div>
+
+                    <div class="flex gap-4">
+                        <select
+                            v-model="selectedType"
+                            class="rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <option value="">Tous les types</option>
+                            <option value="constitution">Constitution</option>
+                            <option value="loi">Loi</option>
+                            <option value="decret">Décret</option>
+                            <option value="arrete">Arrêté</option>
+                            <option value="code">Code</option>
+                            <option value="ordonnance">Ordonnance</option>
+                        </select>
+
+                        <select
+                            v-model="selectedStatus"
+                            class="rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <option value="">Tous les statuts</option>
+                            <option value="published">Publié</option>
+                            <option value="draft">Brouillon</option>
+                            <option value="archived">Archivé</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Table -->
+            <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Document</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Type</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Statut</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Vues</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Modifié</th>
+                                <th class="px-6 py-4 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            <tr v-for="doc in filteredDocuments" :key="doc.id" class="hover:bg-gray-50">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div :class="`flex h-8 w-8 items-center justify-center rounded-lg ${getTypeColor(doc.type)}`">
+                                                <FileText class="h-4 w-4 text-white" />
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ doc.title }}</div>
+                                            <div class="text-sm text-gray-500">{{ doc.reference_number }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold" :class="getTypeBadgeColor(doc.type)">
+                                        {{ doc.type }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold" :class="getStatusBadgeColor(doc.status)">
+                                        {{ doc.status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    {{ doc.views_count || 0 }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ formatDate(doc.updated_at) }}
+                                </td>
+                                <td class="px-6 py-4 text-right text-sm font-medium">
+                                    <div class="flex items-center justify-end space-x-2">
+                                        <button @click="viewDocument(doc)" class="p-1 text-indigo-600 hover:text-indigo-900" title="Voir">
+                                            <Eye class="h-4 w-4" />
+                                        </button>
+                                        <button @click="editDocument(doc)" class="p-1 text-blue-600 hover:text-blue-900" title="Modifier">
+                                            <Edit class="h-4 w-4" />
+                                        </button>
+                                        <button @click="duplicateDocument(doc)" class="p-1 text-green-600 hover:text-green-900" title="Dupliquer">
+                                            <Copy class="h-4 w-4" />
+                                        </button>
+                                        <button @click="deleteDocument(doc)" class="p-1 text-red-600 hover:text-red-900" title="Supprimer">
+                                            <Trash2 class="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Create/Edit Modal -->
+            <div v-if="showCreateModal || editingDocument" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-8">
+                    <div class="mb-6 flex items-center justify-between">
+                        <h3 class="text-xl font-semibold text-gray-900">
+                            {{ editingDocument ? 'Modifier le document' : 'Nouveau document' }}
+                        </h3>
+                        <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
+                            <X class="h-6 w-6" />
+                        </button>
+                    </div>
+
+                    <form @submit.prevent="saveDocument" class="space-y-6">
+                        <!-- Basic Info -->
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-700">Titre</label>
+                                <input
+                                    v-model="form.title"
+                                    type="text"
+                                    required
+                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-700">Numéro de référence</label>
+                                <input
+                                    v-model="form.reference_number"
+                                    type="text"
+                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-700">Type</label>
+                                <select
+                                    v-model="form.type"
+                                    required
+                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option value="constitution">Constitution</option>
+                                    <option value="loi">Loi</option>
+                                    <option value="decret">Décret</option>
+                                    <option value="arrete">Arrêté</option>
+                                    <option value="code">Code</option>
+                                    <option value="ordonnance">Ordonnance</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-700">Catégorie</label>
+                                <select
+                                    v-model="form.category_id"
+                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option value="">Sélectionner une catégorie</option>
+                                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                                        {{ category.name }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-700">Statut</label>
+                                <select
+                                    v-model="form.status"
+                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option value="draft">Brouillon</option>
+                                    <option value="published">Publié</option>
+                                    <option value="archived">Archivé</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-700">Date de publication</label>
+                                <input
+                                    v-model="form.publication_date"
+                                    type="date"
+                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-700">Date d'effet</label>
+                                <input
+                                    v-model="form.effective_date"
+                                    type="date"
+                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700">Résumé</label>
+                            <textarea
+                                v-model="form.summary"
+                                rows="3"
+                                class="w-full resize-none rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Résumé du document..."
+                            ></textarea>
+                        </div>
+
+                        <!-- PDF Upload -->
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700">Fichier PDF</label>
+                            <div class="rounded-xl border-2 border-dashed border-gray-300 p-8 text-center transition-colors hover:border-indigo-400">
+                                <FileText class="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                                <div class="mb-4 text-sm text-gray-600">
+                                    Glissez-déposez votre fichier PDF ici, ou
+                                    <label class="cursor-pointer text-indigo-600 hover:text-indigo-800">
+                                        parcourez
+                                        <input ref="pdfInput" type="file" accept=".pdf" @change="handlePdfUpload" class="hidden" />
+                                    </label>
+                                </div>
+                                <div v-if="form.pdf_file_name" class="text-sm text-green-600">Fichier sélectionné : {{ form.pdf_file_name }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700">Contenu (optionnel)</label>
+                            <textarea
+                                v-model="form.content"
+                                rows="10"
+                                class="w-full resize-none rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Contenu textuel du document..."
+                            ></textarea>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex justify-end gap-4 border-t pt-6">
+                            <button type="button" @click="closeModal" class="px-6 py-3 text-gray-600 transition-colors hover:text-gray-800">
+                                Annuler
+                            </button>
+                            <button
+                                type="submit"
+                                :disabled="saving"
+                                class="rounded-xl bg-indigo-600 px-6 py-3 text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {{ saving ? 'Enregistrement...' : editingDocument ? 'Modifier' : 'Créer' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </AppLayout>
 </template>

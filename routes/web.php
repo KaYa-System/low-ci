@@ -38,15 +38,26 @@ Route::get('/procedures/{slug}', function (string $slug) {
     ]);
 })->name('procedures.show');
 
+// Lecteur PDF
+Route::get('/pdf/{slug}', function (string $slug) {
+    return Inertia::render('legal/PdfViewer', [
+        'documentSlug' => $slug
+    ]);
+})->name('pdf.viewer');
+
 // Page de chat IA
-Route::get('/chat', function () {
-    return Inertia::render('AiChat');
+Route::get('/chat/{session_id?}', function ($session_id = null) {
+    return Inertia::render('AiChat', [
+        'initialSessionId' => $session_id
+    ]);
 })->name('chat');
 
+// Administration routes removed - functionality moved to dashboard
+
 // Dashboard pour les utilisateurs connectés
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

@@ -28,7 +28,10 @@ use SoftDeletes;
         'source_url',
         'metadata',
         'views_count',
-        'is_featured'
+        'is_featured',
+        'pdf_url',
+        'pdf_file_name',
+        'pdf_file_size'
     ];
 
     protected $casts = [
@@ -36,7 +39,8 @@ use SoftDeletes;
         'effective_date' => 'date',
         'metadata' => 'array',
         'views_count' => 'integer',
-        'is_featured' => 'boolean'
+        'is_featured' => 'boolean',
+        'pdf_file_size' => 'integer'
     ];
 
     protected static function booted(): void
