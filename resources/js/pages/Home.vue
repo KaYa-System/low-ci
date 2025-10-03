@@ -59,7 +59,7 @@
                         <!-- AI Response Section -->
                         <div v-if="isLoadingResponse || showAiResponse">
                             <!-- Background Overlay -->
-                            <div class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30" @click="closeAiResponse"></div>
+                            <div class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"></div>
                             
                             <!-- Response Container -->
                             <div class="fixed inset-x-4 bottom-4 lg:inset-x-8 lg:bottom-8 max-w-4xl mx-auto z-40">
