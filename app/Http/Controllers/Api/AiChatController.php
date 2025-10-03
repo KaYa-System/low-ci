@@ -320,8 +320,7 @@ class AiChatController extends Controller
                     'model' => $model,
                     'stream' => $stream,
                     'temperature' => 0.7,
-                    'max_tokens' => 1000,
-                    'top_p' => 0.9
+                    'max_tokens' => 1000
                 ],
                 'timeout' => 180, // Increased timeout for 8B model
                 'stream' => $stream // Enable streaming in Guzzle
