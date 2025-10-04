@@ -188,7 +188,7 @@
                                                     Retour
                                                 </Button>
                                                 <Button
-                                                    @click="isChatMode ? exitChatMode : closeAiResponse"
+                                                    @click="closeAiResponse"
                                                     variant="ghost"
                                                     size="sm"
                                                     class="rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target flex-shrink-0"
@@ -271,24 +271,31 @@
                                         </div>
 
                                         <!-- Chat Input -->
-                                        <div class="border-t border-border/30 px-3 md:px-6 lg:px-8 py-3">
-                                            <form @submit.prevent="sendChatMessage" class="flex gap-2">
-                                                <textarea
-                                                    v-model="currentMessage"
-                                                    @keydown.enter.exact.prevent="sendChatMessage"
-                                                    placeholder="Posez une question de suivi..."
-                                                    class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none text-sm"
-                                                    rows="1"
-                                                    :disabled="isTyping"
-                                                    style="max-height: 100px;"
-                                                ></textarea>
+                                        <div class="border-t border-border/20 bg-gradient-to-b from-background to-muted/10 px-3 md:px-6 lg:px-8 py-4">
+                                            <form @submit.prevent="sendChatMessage" class="flex gap-3 items-end">
+                                                <div class="flex-1 relative">
+                                                    <textarea
+                                                        v-model="currentMessage"
+                                                        @keydown.enter.exact.prevent="sendChatMessage"
+                                                        placeholder="Posez une question de suivi sur la législation..."
+                                                        class="w-full px-4 py-3 border border-border/40 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none text-sm bg-background/80 backdrop-blur-sm shadow-sm transition-all duration-200 hover:border-border/60 placeholder:text-muted-foreground/60"
+                                                        rows="1"
+                                                        :disabled="isTyping"
+                                                        style="max-height: 120px; min-height: 44px;"
+                                                    ></textarea>
+                                                    <!-- Hint text -->
+                                                    <div class="absolute -bottom-5 left-1 text-xs text-muted-foreground/70">
+                                                        <span class="hidden md:inline">Appuyez sur Entrée pour envoyer</span>
+                                                    </div>
+                                                </div>
                                                 <Button
                                                     type="submit"
                                                     :disabled="!currentMessage.trim() || isTyping"
-                                                    size="sm"
-                                                    class="px-3 py-2 flex-shrink-0"
+                                                    size="default"
+                                                    class="px-4 py-3 h-11 flex-shrink-0 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     <Send class="w-4 h-4" />
+                                                    <span class="ml-2 hidden sm:inline text-sm">Envoyer</span>
                                                 </Button>
                                             </form>
                                         </div>
@@ -364,20 +371,20 @@
                                                 <div class="flex flex-col md:flex-row gap-2 md:gap-3 md:items-center md:justify-end">
                                                     <Button
                                                         @click="continueToChat"
-                                                        variant="ghost"
+                                                        variant="outline"
                                                         size="sm"
-                                                        class="md:w-auto text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2"
+                                                        class="md:w-auto text-sm font-medium text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-200 px-4 py-2.5 border border-border/50 hover:border-primary shadow-sm hover:shadow-md"
                                                     >
-                                                        <MessageCircle class="w-3 h-3 mr-1.5" />
+                                                        <MessageCircle class="w-4 h-4 mr-2" />
                                                         <span>Continuer</span>
                                                     </Button>
                                                     <Button
                                                         @click="copyResponse"
                                                         variant="ghost"
                                                         size="sm"
-                                                        class="md:w-auto text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2"
+                                                        class="md:w-auto text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 px-3 py-2 border border-transparent hover:border-border/30"
                                                     >
-                                                        <Copy class="w-3 h-3 mr-1.5" />
+                                                        <Copy class="w-4 h-4 mr-1.5" />
                                                         <span>Copier</span>
                                                     </Button>
                                                 </div>
@@ -598,6 +605,11 @@ const closeAiResponse = () => {
     showAiResponse.value = false
     aiResponse.value = null
     searchQuery.value = ''
+    // Reset chat state as well
+    isChatMode.value = false
+    chatMessages.value = []
+    currentMessage.value = ''
+    isTyping.value = false
     // Re-enable body scroll
     document.body.style.overflow = ''
 }
