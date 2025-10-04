@@ -225,7 +225,7 @@
                                                         </div>
                                                         <div class="flex-1 min-w-0">
                                                             <div class="bg-card/50 rounded-xl p-4 border border-border/30 shadow-sm">
-                                                                <div class="prose prose-sm max-w-none text-foreground text-sm">
+                                                                <div class="prose prose-sm max-w-none text-foreground text-sm text-left legal-document">
                                                                     <div v-html="formatAiMessage(message.content)"></div>
                                                                 </div>
                                                                 
@@ -317,8 +317,8 @@
                                                         <Bot class="w-4 h-4 lg:w-5 lg:h-5 text-white" />
                                                     </div>
                                                     <div class="flex-1 min-w-0">
-                                                        <div class="prose prose-sm max-w-none text-foreground leading-relaxed mobile-select">
-                                                            <div v-html="formatAiMessage(aiResponse.message.content)" class="text-sm lg:text-base text-justify"></div>
+                                                        <div class="prose prose-sm max-w-none text-foreground leading-relaxed mobile-select legal-document">
+                                                            <div v-html="formatAiMessage(aiResponse.message.content)" class="text-sm lg:text-base"></div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -894,5 +894,137 @@ onUnmounted(() => {
     hsl(var(--background)) 0%,
     hsl(var(--muted) / 0.3) 100%
     );
+}
+
+/* Structure de document juridique */
+.legal-document {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.legal-document h1 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    margin-top: 1.25rem;
+    color: hsl(var(--foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.legal-document h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+    color: hsl(var(--foreground));
+    border-bottom: 1px solid hsl(var(--border));
+    padding-bottom: 0.25rem;
+}
+
+.legal-document h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+    color: hsl(var(--foreground));
+}
+
+.legal-document p {
+    margin-bottom: 0.75rem;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    text-justify: inter-word;
+}
+
+.legal-document ul, .legal-document ol {
+    margin-bottom: 0.75rem;
+    padding-left: 1.25rem;
+}
+
+.legal-document li {
+    margin-bottom: 0.375rem;
+    line-height: 1.5;
+}
+
+.legal-document strong {
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.legal-document em {
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+}
+
+.legal-document blockquote {
+    border-left: 3px solid hsl(var(--primary));
+    padding-left: 1rem;
+    margin: 0.75rem 0;
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--muted) / 0.1);
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+}
+
+.legal-document code {
+    background-color: hsl(var(--muted) / 0.3);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+}
+
+.legal-document pre {
+    background-color: hsl(var(--muted) / 0.2);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    border: 1px solid hsl(var(--border));
+}
+
+.legal-document pre code {
+    background: none;
+    padding: 0;
+    border: none;
+    font-size: 0.8125em;
+}
+
+/* Numérotation des articles juridiques */
+.legal-document .article {
+    margin: 1rem 0;
+    padding-left: 0;
+    counter-increment: article;
+}
+
+.legal-document .article::before {
+    content: "Article " counter(article) ". ";
+    font-weight: 700;
+    color: hsl(var(--primary));
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+/* Alinéas */
+.legal-document .paragraph {
+    margin: 0.5rem 0;
+    text-indent: 1.5rem;
+    text-align: justify;
+}
+
+/* Références juridiques */
+.legal-document .legal-ref {
+    font-style: italic;
+    color: hsl(var(--primary));
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-style: dotted;
 }
 </style>
