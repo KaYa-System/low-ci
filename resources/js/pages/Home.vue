@@ -174,29 +174,128 @@
                                                 </div>
                                                 <div class="min-w-0 flex-1">
                                                     <h3 class="text-lg lg:text-xl font-bold text-foreground truncate">Assistant IA Juridique</h3>
-                                                    <p class="text-xs lg:text-sm text-muted-foreground font-medium">Réponse intelligente et précise</p>
-                                                    <div v-if="aiResponse.message.metadata && aiResponse.message.metadata.stream" class="mt-1">
-                                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                            <div class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1.5 animate-pulse"></div>
-                                                            Streaming activé
-                                                        </span>
-                                                    </div>
+                                                    <p class="text-xs lg:text-sm text-muted-foreground font-medium">{{ isChatMode ? 'Mode conversation' : 'Réponse intelligente et précise' }}</p>
                                                 </div>
                                             </div>
-                                            <Button
-                                                @click="closeAiResponse"
-                                                variant="ghost"
-                                                size="sm"
-                                                class="rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target flex-shrink-0"
-                                                :aria-label="'Fermer la réponse'"
-                                            >
-                                                <X class="w-4 h-4 lg:w-5 lg:h-5" />
-                                            </Button>
+                                            <div class="flex items-center gap-2">
+                                                <Button
+                                                    v-if="isChatMode"
+                                                    @click="exitChatMode"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    class="rounded-full hover:bg-muted/80 transition-all duration-200 touch-target flex-shrink-0 text-xs"
+                                                >
+                                                    Retour
+                                                </Button>
+                                                <Button
+                                                    @click="isChatMode ? exitChatMode : closeAiResponse"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    class="rounded-full hover:bg-muted/80 transition-all duration-200 hover:scale-105 touch-target flex-shrink-0"
+                                                    :aria-label="'Fermer'"
+                                                >
+                                                    <X class="w-4 h-4 lg:w-5 lg:h-5" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <!-- Scrollable Content -->
-                                    <div class="flex-1 overflow-y-auto ai-response-content px-3 md:px-6 lg:px-8 py-3 md:py-4 lg:py-6">
+                                    <!-- Chat Mode Content -->
+                                    <div v-if="isChatMode" class="flex-1 flex flex-col overflow-hidden">
+                                        <!-- Chat Messages -->
+                                        <div class="flex-1 overflow-y-auto chat-messages-container px-3 md:px-6 lg:px-8 py-3 md:py-4">
+                                            <div class="space-y-4">
+                                                <div
+                                                    v-for="message in chatMessages"
+                                                    :key="message.id"
+                                                    class="flex"
+                                                    :class="{ 'justify-end': message.role === 'user' }"
+                                                >
+                                                    <!-- User Message -->
+                                                    <div v-if="message.role === 'user'" class="max-w-[80%]">
+                                                        <div class="bg-primary text-primary-foreground rounded-2xl px-4 py-3 text-sm">
+                                                            <div class="whitespace-pre-wrap">{{ message.content }}</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Assistant Message -->
+                                                    <div v-else class="flex max-w-full">
+                                                        <div class="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center mr-3 mt-1 flex-shrink-0">
+                                                            <Bot class="w-4 h-4 text-white" />
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="bg-card/50 rounded-xl p-4 border border-border/30 shadow-sm">
+                                                                <div class="prose prose-sm max-w-none text-foreground text-sm">
+                                                                    <div v-html="formatAiMessage(message.content)"></div>
+                                                                </div>
+                                                                
+                                                                <!-- Referenced Documents in Chat -->
+                                                                <div v-if="message.metadata && message.metadata.cited_documents && message.metadata.cited_documents.length > 0" class="mt-3 pt-3 border-t border-border/30">
+                                                                    <p class="text-xs font-medium mb-2 text-muted-foreground">Documents référencés:</p>
+                                                                    <div class="space-y-1">
+                                                                        <a
+                                                                            v-for="doc in message.metadata.cited_documents"
+                                                                            :key="doc.id"
+                                                                            :href="`/documents/${doc.slug}`"
+                                                                            class="block p-2 rounded-lg hover:bg-muted/50 transition-colors text-xs"
+                                                                        >
+                                                                            <div class="flex items-center">
+                                                                                <span :class="`inline-block w-2 h-2 rounded-full mr-2 flex-shrink-0 ${getTypeColor(doc.type)}`"></span>
+                                                                                <span class="font-medium flex-1 truncate">{{ doc.title }}</span>
+                                                                            </div>
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Typing Indicator -->
+                                                <div v-if="isTyping" class="flex">
+                                                    <div class="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center mr-3 mt-1">
+                                                        <Bot class="w-4 h-4 text-white" />
+                                                    </div>
+                                                    <div class="bg-card/50 rounded-xl p-4 border border-border/30">
+                                                        <div class="flex items-center space-x-2">
+                                                            <div class="flex space-x-1">
+                                                                <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                                                                <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                                                                <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                                            </div>
+                                                            <span class="text-sm text-muted-foreground">L'assistant réfléchit...</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Chat Input -->
+                                        <div class="border-t border-border/30 px-3 md:px-6 lg:px-8 py-3">
+                                            <form @submit.prevent="sendChatMessage" class="flex gap-2">
+                                                <textarea
+                                                    v-model="currentMessage"
+                                                    @keydown.enter.exact.prevent="sendChatMessage"
+                                                    placeholder="Posez une question de suivi..."
+                                                    class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none text-sm"
+                                                    rows="1"
+                                                    :disabled="isTyping"
+                                                    style="max-height: 100px;"
+                                                ></textarea>
+                                                <Button
+                                                    type="submit"
+                                                    :disabled="!currentMessage.trim() || isTyping"
+                                                    size="sm"
+                                                    class="px-3 py-2 flex-shrink-0"
+                                                >
+                                                    <Send class="w-4 h-4" />
+                                                </Button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <!-- Original Response Mode Content -->
+                                    <div v-else class="flex-1 overflow-y-auto ai-response-content px-3 md:px-6 lg:px-8 py-3 md:py-4 lg:py-6">
                                         <div class="space-y-4 lg:space-y-6">
                                             <!-- User Question -->
                                             <div class="bg-gradient-to-r from-muted/40 to-muted/20 rounded-xl lg:rounded-2xl p-4 lg:p-5 border border-border/40">
@@ -257,37 +356,37 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <!-- Discrete Actions Footer -->
-                                    <div class="flex-shrink-0 px-3 md:px-6 lg:px-8 py-2 md:py-3 border-t border-border/20">
-                                        <div class="flex flex-col gap-2 md:gap-3">
-                                            <!-- Mobile: Stack buttons vertically, Desktop: Horizontal -->
-                                            <div class="flex flex-col md:flex-row gap-2 md:gap-3 md:items-center md:justify-end">
-                                                <Button
-                                                    @click="continueToChat"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    class="md:w-auto text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2"
-                                                >
-                                                    <MessageCircle class="w-3 h-3 mr-1.5" />
-                                                    <span>Continuer</span>
-                                                </Button>
-                                                <Button
-                                                    @click="copyResponse"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    class="md:w-auto text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2"
-                                                >
-                                                    <Copy class="w-3 h-3 mr-1.5" />
-                                                    <span>Copier</span>
-                                                </Button>
-                                            </div>
-                                            <!-- Disclaimer avec meilleur responsive -->
-                                            <div class="text-xs text-muted-foreground bg-muted/50 px-2 md:px-3 py-2 rounded-lg md:rounded-full">
-                                                <div class="flex items-center justify-center space-x-1 text-center">
-                                                    <div class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
-                                                    <span class="leading-tight text-center">Réponse générée par IA - Vérifiez auprès d'un professionnel</span>
+                                        <!-- Discrete Actions Footer -->
+                                        <div class="flex-shrink-0 px-3 md:px-6 lg:px-8 py-2 md:py-3 border-t border-border/20">
+                                            <div class="flex flex-col gap-2 md:gap-3">
+                                                <!-- Mobile: Stack buttons vertically, Desktop: Horizontal -->
+                                                <div class="flex flex-col md:flex-row gap-2 md:gap-3 md:items-center md:justify-end">
+                                                    <Button
+                                                        @click="continueToChat"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        class="md:w-auto text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2"
+                                                    >
+                                                        <MessageCircle class="w-3 h-3 mr-1.5" />
+                                                        <span>Continuer</span>
+                                                    </Button>
+                                                    <Button
+                                                        @click="copyResponse"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        class="md:w-auto text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 px-3 py-2"
+                                                    >
+                                                        <Copy class="w-3 h-3 mr-1.5" />
+                                                        <span>Copier</span>
+                                                    </Button>
+                                                </div>
+                                                <!-- Disclaimer avec meilleur responsive -->
+                                                <div class="text-xs text-muted-foreground bg-muted/50 px-2 md:px-3 py-2 rounded-lg md:rounded-full">
+                                                    <div class="flex items-center justify-center space-x-1 text-center">
+                                                        <div class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse flex-shrink-0"></div>
+                                                        <span class="leading-tight text-center">Réponse générée par IA - Vérifiez auprès d'un professionnel</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -321,7 +420,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { router } from '@inertiajs/vue3'
-import { Scale, Search, Eye, MessageCircle, Briefcase, Shield, Users, Calculator, Bot, X, Copy } from 'lucide-vue-next'
+import { Scale, Search, Eye, MessageCircle, Briefcase, Shield, Users, Calculator, Bot, X, Copy, Send } from 'lucide-vue-next'
 import { marked } from 'marked'
 import LegalLayout from '@/layouts/LegalLayout.vue'
 
@@ -345,6 +444,12 @@ const featuredCategories = ref([
 const aiResponse = ref(null)
 const isLoadingResponse = ref(false)
 const showAiResponse = ref(false)
+
+// Chat state
+const isChatMode = ref(false)
+const chatMessages = ref([])
+const currentMessage = ref('')
+const isTyping = ref(false)
 
 // Methods
 const loadData = async () => {
@@ -499,7 +604,28 @@ const closeAiResponse = () => {
 
 const continueToChat = () => {
     if (aiResponse.value) {
-        router.visit(`/chat/${aiResponse.value.sessionId}`)
+        // Initialize chat mode with existing conversation
+        isChatMode.value = true
+        chatMessages.value = [
+            {
+                id: 1,
+                role: 'user',
+                content: aiResponse.value.query,
+                sent_at: new Date()
+            },
+            {
+                id: 2,
+                role: 'assistant',
+                content: aiResponse.value.message.content,
+                metadata: aiResponse.value.message.metadata,
+                sent_at: new Date()
+            }
+        ]
+        
+        // Clear the input and scroll to bottom
+        nextTick(() => {
+            scrollToChatBottom()
+        })
     }
 }
 
@@ -521,6 +647,79 @@ const formatAiMessage = (content: string) => {
         gfm: true
     })
     return marked.parse(content)
+}
+
+// Chat functions
+const scrollToChatBottom = () => {
+    nextTick(() => {
+        const chatContainer = document.querySelector('.chat-messages-container')
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight
+        }
+    })
+}
+
+const sendChatMessage = async () => {
+    if (!currentMessage.value.trim() || isTyping.value || !aiResponse.value) return
+
+    const userMessage = {
+        id: Date.now(),
+        role: 'user',
+        content: currentMessage.value,
+        sent_at: new Date()
+    }
+
+    chatMessages.value.push(userMessage)
+    const messageToSend = currentMessage.value
+    currentMessage.value = ''
+    isTyping.value = true
+
+    scrollToChatBottom()
+
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        
+        const response = await fetch(`/api/ai/chat/sessions/${aiResponse.value.sessionId}/messages`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken || '',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ content: messageToSend })
+        })
+
+        const data = await response.json()
+
+        if (data.data) {
+            chatMessages.value.push({
+                id: Date.now() + 1,
+                role: 'assistant',
+                content: data.data.content,
+                metadata: data.data.metadata,
+                sent_at: new Date()
+            })
+            scrollToChatBottom()
+        }
+    } catch (error) {
+        console.error('Error sending message:', error)
+        chatMessages.value.push({
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: 'Désolé, je rencontre une erreur technique. Veuillez réessayer.',
+            sent_at: new Date()
+        })
+    } finally {
+        isTyping.value = false
+        scrollToChatBottom()
+    }
+}
+
+const exitChatMode = () => {
+    isChatMode.value = false
+    chatMessages.value = []
+    currentMessage.value = ''
+    isTyping.value = false
 }
 
 // Watch for popup state changes to control body scroll
