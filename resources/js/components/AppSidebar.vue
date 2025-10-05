@@ -34,18 +34,18 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Chat IA',
-        href: '/ai-chat',
+        href: '/chat',
         icon: MessageSquare,
+    },
+    {
+        title: 'Analytics',
+        href: '/analytics',
+        icon: BarChart3,
     },
     {
         title: 'Procédures',
         href: '/procedures',
         icon: FileText,
-    },
-    {
-        title: 'Rapports',
-        href: '/reports',
-        icon: BarChart3,
     },
     {
         title: 'Utilisateurs',

@@ -323,9 +323,17 @@ const loadChatHistory = async () => {
 
 const createNewSession = async () => {
   try {
+    // Collecte les données côté client
+    const clientData = {
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      screen_width: window.screen.width,
+      screen_height: window.screen.height
+    }
+    
     const response = await fetch('/api/ai/chat/sessions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_data: clientData })
     })
     const data = await response.json()
     currentSessionId.value = data.data.session_id

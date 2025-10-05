@@ -69,6 +69,11 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         ->name('dashboard.documents.delete');
     Route::post('dashboard/documents/{document:id}/duplicate', [App\Http\Controllers\DashboardController::class, 'duplicateDocument'])
         ->name('dashboard.documents.duplicate');
+    
+    // Page Analytics
+    Route::get('/analytics', function () {
+        return Inertia::render('Analytics');
+    })->name('analytics');
 });
 
 require __DIR__.'/settings.php';

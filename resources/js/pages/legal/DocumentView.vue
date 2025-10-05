@@ -230,8 +230,36 @@
             </div>
           </div>
 
-          <!-- Document Content -->
-          <div class="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-8 shadow-sm mobile-scroll">
+          <!-- Message de redirection PDF -->
+          <div v-if="document.pdf_url" class="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-8 shadow-sm mobile-scroll mb-6">
+            <div class="text-center py-8">
+              <div class="mb-4">
+                <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">📄 Lecteur PDF Disponible</h3>
+              <p class="text-gray-600 mb-6">Ce document est disponible au format PDF pour une meilleure lisibilité.<br>Redirection automatique vers le lecteur PDF...</p>
+              <div class="flex justify-center space-x-4">
+                <button
+                  @click="viewPdf"
+                  class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
+                >
+                  <FileText class="w-4 h-4 mr-2" />
+                  Ouvrir le PDF maintenant
+                </button>
+                <button
+                  @click="() => { showTextFallback = true }"
+                  class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Voir le contenu texte
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document Content (fallback ou si pas de PDF) -->
+          <div v-if="!document.pdf_url || showTextFallback" class="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-8 shadow-sm mobile-scroll">
             <div id="content" class="prose prose-sm lg:prose-lg max-w-none mobile-select">
               
               <!-- Sections Structure -->
@@ -397,6 +425,7 @@ const document = ref<any>({})
 const showAiChat = ref(false)
 const aiQuestion = ref('')
 const showMobileToc = ref(false)
+const showTextFallback = ref(false)
 
 // Methods
 const loadDocument = async () => {
@@ -404,6 +433,9 @@ const loadDocument = async () => {
     const response = await fetch(`/api/legal/documents/${props.documentSlug}`)
     const data = await response.json()
     document.value = data.data || {}
+    
+    // Rediriger automatiquement vers le PDF si disponible
+    autoRedirectToPdf()
   } catch (error) {
     console.error('Error loading document:', error)
   }
@@ -436,6 +468,16 @@ const formatContent = (content: string) => {
 
 const viewPdf = () => {
   router.visit(`/pdf/${props.documentSlug}`)
+}
+
+// Rediriger automatiquement vers le PDF si disponible
+const autoRedirectToPdf = () => {
+  if (document.value.pdf_url && !showTextFallback.value) {
+    // Si le document a un PDF et que l'utilisateur n'a pas choisi le texte, rediriger automatiquement
+    setTimeout(() => {
+      router.visit(`/pdf/${props.documentSlug}`)
+    }, 3000) // 3 secondes pour laisser le temps de voir les options
+  }
 }
 
 const askAiAboutDocument = () => {

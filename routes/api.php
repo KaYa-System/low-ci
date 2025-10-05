@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\LegalCategoryController;
 use App\Http\Controllers\Api\LegalDocumentController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\AiChatController;
+use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\DocumentAnalysisController;
 use Illuminate\Support\Facades\Route;
 
 // Routes publiques pour la législation (nécessaires pour l'affichage public)
@@ -39,4 +41,20 @@ Route::prefix('ai')->group(function () {
         Route::get('chat/sessions', [AiChatController::class, 'getUserSessions']);
         Route::delete('chat/sessions/{session:session_id}', [AiChatController::class, 'deleteSession']);
     });
+});
+
+// Routes pour Analytics (admin seulement)
+Route::prefix('analytics')->middleware(['auth:web', 'admin'])->group(function () {
+    Route::get('dashboard', [AnalyticsController::class, 'dashboard']);
+    Route::get('countries', [AnalyticsController::class, 'countries']);
+    Route::get('devices', [AnalyticsController::class, 'devices']);
+    Route::get('browsers', [AnalyticsController::class, 'browsers']);
+    Route::get('general', [AnalyticsController::class, 'general']);
+    Route::get('export', [AnalyticsController::class, 'export']);
+});
+
+// Routes pour l'analyse de documents (admin seulement)
+Route::prefix('documents')->middleware(['auth:web', 'admin'])->group(function () {
+    Route::post('analyze', [DocumentAnalysisController::class, 'analyzeDocument']);
+    Route::post('preview', [DocumentAnalysisController::class, 'previewDocument']);
 });

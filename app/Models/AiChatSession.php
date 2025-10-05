@@ -14,12 +14,34 @@ class AiChatSession extends Model
         'user_id',
         'title',
         'context',
-        'last_activity'
+        'last_activity',
+        'ip_address',
+        'user_agent',
+        'country',
+        'country_name',
+        'city',
+        'device_type',
+        'browser',
+        'browser_version',
+        'operating_system',
+        'platform',
+        'is_mobile',
+        'is_tablet',
+        'is_desktop',
+        'language',
+        'timezone',
+        'screen_width',
+        'screen_height'
     ];
 
     protected $casts = [
         'context' => 'array',
-        'last_activity' => 'datetime'
+        'last_activity' => 'datetime',
+        'is_mobile' => 'boolean',
+        'is_tablet' => 'boolean',
+        'is_desktop' => 'boolean',
+        'screen_width' => 'integer',
+        'screen_height' => 'integer'
     ];
 
     protected static function booted(): void

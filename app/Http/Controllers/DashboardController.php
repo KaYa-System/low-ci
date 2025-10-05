@@ -7,18 +7,25 @@ use App\Models\LegalCategory;
 use App\Models\User;
 use App\Models\AiChatSession;
 use App\Models\AiChatMessage;
+use App\Services\DocumentAnalysisService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Smalot\PdfParser\Parser;
 
 class DashboardController extends Controller
 {
+    protected DocumentAnalysisService $analysisService;
+    
+    public function __construct(DocumentAnalysisService $analysisService)
+    {
+        $this->analysisService = $analysisService;
+    }
     public function index()
     {
         $user = Auth::user();
@@ -96,7 +103,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Store a new document
+     * Store a new document avec analyse IA automatique
      */
     public function storeDocument(Request $request)
     {
@@ -105,34 +112,58 @@ class DashboardController extends Controller
         }
 
         try {
+            // Validation simplifiée - seulement le PDF et les champs optionnels de correction
             $validated = $request->validate([
-                'title' => 'required|string|max:255|unique:legal_documents,title',
-                'reference_number' => 'nullable|string|max:100|unique:legal_documents,reference_number',
-                'type' => 'required|in:constitution,loi,decret,arrete,code,ordonnance',
+                'pdf_file' => 'required|file|mimes:pdf|max:51200', // 50MB max
                 'category_id' => 'nullable|exists:legal_categories,id',
-                'status' => 'required|in:draft,published,archived',
+                'status' => 'nullable|in:draft,published,archived',
+                // Champs optionnels pour corriger l'analyse IA
+                'title' => 'nullable|string|max:255',
+                'reference_number' => 'nullable|string|max:100',
+                'type' => 'nullable|in:constitution,loi,decret,arrete,code,ordonnance',
+                'summary' => 'nullable|string|max:1000',
                 'publication_date' => 'nullable|date|before_or_equal:today',
                 'effective_date' => 'nullable|date',
-                'summary' => 'nullable|string|max:1000',
-                'content' => 'nullable|string',
-                'pdf_file' => 'nullable|file|mimes:pdf|max:51200', // 50MB max
             ], [
-                'title.required' => 'Le titre est obligatoire.',
-                'title.unique' => 'Un document avec ce titre existe déjà.',
-                'reference_number.unique' => 'Un document avec ce numéro de référence existe déjà.',
-                'type.required' => 'Le type de document est obligatoire.',
-                'status.required' => 'Le statut est obligatoire.',
-                'publication_date.before_or_equal' => 'La date de publication ne peut pas être dans le futur.',
-                'summary.max' => 'Le résumé ne peut pas dépasser 1000 caractères.',
+                'pdf_file.required' => 'Un fichier PDF est obligatoire.',
                 'pdf_file.mimes' => 'Le fichier doit être un PDF.',
                 'pdf_file.max' => 'Le fichier PDF ne peut pas dépasser 50MB.',
+                'publication_date.before_or_equal' => 'La date de publication ne peut pas être dans le futur.',
+                'summary.max' => 'Le résumé ne peut pas dépasser 1000 caractères.',
             ]);
 
-            $document = new LegalDocument();
-            $document->fill($validated);
+            $pdfFile = $request->file('pdf_file');
             
-            // Generate unique slug
-            $baseSlug = Str::slug($validated['title']);
+            // 1. Analyser le document avec l'IA
+            $aiAnalysis = $this->analysisService->analyzeDocument($pdfFile);
+            
+            // 2. Utiliser les corrections manuelles si fournies, sinon utiliser l'analyse IA
+            $documentData = [
+                'title' => $validated['title'] ?? $aiAnalysis['title'],
+                'type' => $validated['type'] ?? $aiAnalysis['type'],
+                'reference_number' => $validated['reference_number'] ?? $aiAnalysis['reference_number'],
+                'summary' => $validated['summary'] ?? $aiAnalysis['summary'],
+                'publication_date' => $validated['publication_date'] ?? $aiAnalysis['publication_date'],
+                'effective_date' => $validated['effective_date'] ?? $aiAnalysis['effective_date'],
+                'category_id' => $validated['category_id'],
+                'status' => $validated['status'] ?? 'draft',
+            ];
+            
+            // Vérifier l'unicité du titre
+            $originalTitle = $documentData['title'];
+            $counter = 1;
+            while (LegalDocument::where('title', $documentData['title'])->exists()) {
+                $documentData['title'] = $originalTitle . ' (' . $counter . ')';
+                $counter++;
+            }
+            
+            // Vérifier l'unicité du numéro de référence
+            if ($documentData['reference_number'] && LegalDocument::where('reference_number', $documentData['reference_number'])->exists()) {
+                $documentData['reference_number'] = $documentData['reference_number'] . '-' . time();
+            }
+            
+            // 3. Générer le slug unique
+            $baseSlug = Str::slug($documentData['title']);
             $slug = $baseSlug;
             $counter = 1;
             
@@ -141,40 +172,44 @@ class DashboardController extends Controller
                 $counter++;
             }
             
-            $document->slug = $slug;
+            $documentData['slug'] = $slug;
+            
+            // 4. Sauvegarder le PDF et extraire le contenu pour la recherche
+            $filename = time() . '_' . Str::slug($documentData['title']) . '.pdf';
+            $path = $pdfFile->storeAs('legal-documents', $filename, 'public');
+            
+            $documentData['pdf_url'] = Storage::url($path);
+            $documentData['pdf_file_name'] = $pdfFile->getClientOriginalName();
+            $documentData['pdf_file_size'] = $pdfFile->getSize();
+            
+            // Extraire le contenu pour la recherche (pas pour l'affichage)
+            try {
+                $parser = new Parser();
+                $pdf = $parser->parseFile($pdfFile->getPathname());
+                $extractedText = $pdf->getText();
+                $documentData['content'] = $this->cleanExtractedText($extractedText);
+            } catch (\Exception $e) {
+                Log::warning('PDF text extraction failed: ' . $e->getMessage());
+                $documentData['content'] = null;
+            }
+            
+            // 5. Créer le document
+            $document = LegalDocument::create($documentData);
 
-            // Handle PDF upload
-            if ($request->hasFile('pdf_file')) {
-                $pdfFile = $request->file('pdf_file');
-                $filename = time() . '_' . Str::slug($validated['title']) . '.pdf';
-                $path = $pdfFile->storeAs('legal-documents', $filename, 'public');
-
-                $document->pdf_url = Storage::url($path);
-                $document->pdf_file_name = $pdfFile->getClientOriginalName();
-                $document->pdf_file_size = $pdfFile->getSize();
-                
-                // Extract PDF content
-                try {
-                    $parser = new Parser();
-                    $pdf = $parser->parseFile($pdfFile->getPathname());
-                    $extractedText = $pdf->getText();
-                    
-                    // Clean and store the extracted text
-                    $document->content = $this->cleanExtractedText($extractedText);
-                    
-                    // Generate summary from first 500 characters if summary is empty
-                    if (empty($validated['summary']) && $extractedText) {
-                        $document->summary = Str::limit($this->cleanExtractedText($extractedText), 500);
-                    }
-                } catch (\Exception $e) {
-                    // Log the error but don't fail the upload
-                    Log::warning('PDF text extraction failed: ' . $e->getMessage());
-                }
+            // Message de succès avec informations sur l'analyse
+            $confidence = $aiAnalysis['confidence_score'] ?? 0;
+            $source = $aiAnalysis['analysis_source'] ?? 'unknown';
+            
+            $message = "Document créé avec succès ! ";
+            if ($source === 'ai' && $confidence > 0.7) {
+                $message .= "(Analyse IA avec confiance élevée: " . round($confidence * 100) . "%)"; 
+            } elseif ($source === 'ai') {
+                $message .= "(Analyse IA avec confiance moyenne: " . round($confidence * 100) . "% - Vérifiez les informations)";
+            } else {
+                $message .= "(Analyse de base - Complétez les informations manuellement)";
             }
 
-            $document->save();
-
-            return back()->with('success', 'Document créé avec succès !');
+            return back()->with('success', $message);
             
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();

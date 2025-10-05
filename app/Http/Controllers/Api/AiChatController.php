@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AiChatSession;
 use App\Models\AiChatMessage;
 use App\Models\LegalDocument;
+use App\Services\UserTrackingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
@@ -13,16 +14,30 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AiChatController extends Controller
 {
+    protected UserTrackingService $trackingService;
+
+    public function __construct(UserTrackingService $trackingService)
+    {
+        $this->trackingService = $trackingService;
+    }
     /**
      * Create a new chat session
      */
     public function createSession(Request $request): JsonResponse
     {
-        $session = AiChatSession::create([
+        // Collecte des données client optionnelles depuis le frontend
+        $clientData = $request->input('client_data', []);
+        
+        // Collecte des données de tracking
+        $trackingData = $this->trackingService->collectTrackingData($request, $clientData);
+        
+        $sessionData = array_merge([
             'user_id' => auth()->id(),
             'title' => null, // Will be generated from first message
             'context' => []
-        ]);
+        ], $trackingData);
+        
+        $session = AiChatSession::create($sessionData);
 
         return response()->json([
             'data' => $session,
