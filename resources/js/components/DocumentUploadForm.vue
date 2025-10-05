@@ -10,18 +10,17 @@
                 </button>
             </div>
 
-            <!-- Mode d'analyse automatique -->
-            <div class="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
-                <div class="flex items-center mb-2">
-                    <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            <!-- Mode d'upload simple -->
+            <div class="mb-6 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                         </svg>
                     </div>
-                    <div>
-                        <h4 class="text-sm font-semibold text-indigo-900">🤖 Analyse IA Automatique</h4>
-                        <p class="text-xs text-indigo-700">L'IA analysera automatiquement votre PDF et remplira les champs (titre, type, résumé, etc.)</p>
-                    </div>
+                    <h4 class="text-xl font-semibold text-gray-900 mb-2">✨ Upload Intelligent</h4>
+                    <p class="text-gray-600">Déposez votre PDF et laissez l'IA faire le travail !<br>
+                    <span class="text-sm text-indigo-600 font-medium">Titre, type, résumé... tout sera détecté automatiquement</span></p>
                 </div>
             </div>
 
@@ -79,135 +78,34 @@
                     </p>
                 </div>
 
-                <!-- Aperçu des résultats d'analyse (si disponible) -->
-                <div v-if="analysisResults" class="space-y-6">
-                    <div class="border-t pt-6">
-                        <h4 class="text-lg font-medium text-gray-900 mb-4">📋 Résultats de l'analyse IA</h4>
-                        <div class="bg-gray-50 rounded-xl p-4 space-y-3">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <span class="text-xs font-medium text-gray-500 uppercase">Titre détecté</span>
-                                    <p class="text-sm text-gray-900">{{ analysisResults.title }}</p>
-                                </div>
-                                <div>
-                                    <span class="text-xs font-medium text-gray-500 uppercase">Type détecté</span>
-                                    <p class="text-sm text-gray-900 capitalize">{{ analysisResults.type }}</p>
-                                </div>
-                                <div>
-                                    <span class="text-xs font-medium text-gray-500 uppercase">Référence</span>
-                                    <p class="text-sm text-gray-900">{{ analysisResults.reference_number || 'Non détectée' }}</p>
-                                </div>
-                                <div>
-                                    <span class="text-xs font-medium text-gray-500 uppercase">Confiance IA</span>
-                                    <div class="flex items-center">
-                                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                                            <div 
-                                                class="h-2 rounded-full"
-                                                :class="analysisResults.confidence_score > 0.7 ? 'bg-green-500' : analysisResults.confidence_score > 0.4 ? 'bg-yellow-500' : 'bg-red-500'"
-                                                :style="`width: ${analysisResults.confidence_score * 100}%`"
-                                            ></div>
-                                        </div>
-                                        <span class="text-xs">{{ Math.round(analysisResults.confidence_score * 100) }}%</span>
-                                    </div>
-                                </div>
+                <!-- Aperçu simple des résultats (si disponible) -->
+                <div v-if="analysisResults" class="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+                    <div class="flex items-center justify-center mb-3">
+                        <CheckCircle class="h-8 w-8 text-green-600 mr-2" />
+                        <h4 class="text-lg font-semibold text-green-900">🎉 Document analysé avec succès !</h4>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 mb-4 text-left">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-xs font-medium text-gray-500 uppercase">Titre détecté</span>
+                                <p class="text-sm font-medium text-gray-900 mt-1">{{ analysisResults.title }}</p>
                             </div>
                             <div>
-                                <span class="text-xs font-medium text-gray-500 uppercase">Résumé généré</span>
-                                <p class="text-sm text-gray-700 mt-1">{{ analysisResults.summary || 'Aucun résumé détecté' }}</p>
+                                <span class="text-xs font-medium text-gray-500 uppercase">Type détecté</span>
+                                <p class="text-sm font-medium text-gray-900 mt-1 capitalize">{{ analysisResults.type }}</p>
                             </div>
+                        </div>
+                        <div class="mt-3" v-if="analysisResults.summary">
+                            <span class="text-xs font-medium text-gray-500 uppercase">Résumé généré</span>
+                            <p class="text-sm text-gray-700 mt-1 line-clamp-2">{{ analysisResults.summary }}</p>
                         </div>
                     </div>
-
-                    <!-- Corrections manuelles optionnelles -->
-                    <div class="border-t pt-6">
-                        <h4 class="text-lg font-medium text-gray-900 mb-4">✏️ Corrections manuelles (optionnel)</h4>
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Corriger le titre</label>
-                                <input
-                                    v-model="form.title"
-                                    type="text"
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                                    :placeholder="analysisResults.title"
-                                />
-                            </div>
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Corriger le type</label>
-                                <select
-                                    v-model="form.type"
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                                >
-                                    <option value="">-- Garder la détection IA --</option>
-                                    <option value="constitution">Constitution</option>
-                                    <option value="loi">Loi</option>
-                                    <option value="decret">Décret</option>
-                                    <option value="arrete">Arrêté</option>
-                                    <option value="code">Code</option>
-                                    <option value="ordonnance">Ordonnance</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Corriger la référence</label>
-                                <input
-                                    v-model="form.reference_number"
-                                    type="text"
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                                    :placeholder="analysisResults.reference_number || 'Ex: LOI-2024-001'"
-                                />
-                            </div>
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Catégorie</label>
-                                <select
-                                    v-model="form.category_id"
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                                >
-                                    <option value="">Sélectionner une catégorie</option>
-                                    <option v-for="category in categories" :key="category.id" :value="category.id">
-                                        {{ category.name }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="mt-4">
-                            <label class="mb-2 block text-sm font-medium text-gray-700">Corriger le résumé</label>
-                            <textarea
-                                v-model="form.summary"
-                                rows="3"
-                                maxlength="1000"
-                                class="w-full resize-none rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                                :placeholder="analysisResults.summary || 'Résumé du document...'"
-                            ></textarea>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mt-4">
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Date de publication</label>
-                                <input
-                                    v-model="form.publication_date"
-                                    type="date"
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                                />
-                            </div>
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Date d'effet</label>
-                                <input
-                                    v-model="form.effective_date"
-                                    type="date"
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                                />
-                            </div>
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Statut</label>
-                                <select
-                                    v-model="form.status"
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                                >
-                                    <option value="draft">Brouillon</option>
-                                    <option value="published">Publié</option>
-                                    <option value="archived">Archivé</option>
-                                </select>
-                            </div>
+                    
+                    <div class="flex items-center justify-center">
+                        <div class="flex items-center bg-white rounded-full px-4 py-2 border">
+                            <div class="w-4 h-4 rounded-full mr-2" :class="analysisResults.confidence_score > 0.7 ? 'bg-green-500' : analysisResults.confidence_score > 0.4 ? 'bg-yellow-500' : 'bg-red-500'"></div>
+                            <span class="text-sm font-medium">Confiance IA : {{ Math.round(analysisResults.confidence_score * 100) }}%</span>
                         </div>
                     </div>
                 </div>
