@@ -14,14 +14,18 @@ const props = defineProps<{
     isAdmin?: boolean;
     adminStats?: any;
     documents?: any[];
+    categories?: any[];
+    errors?: any;
+    success?: string;
+    error?: string;
 }>();
 
 // État local
 const activeTab = ref('overview');
 
 // Admin state
-const adminDocuments = ref<any[]>([]);
-const adminStatsLocal = ref({
+const adminDocuments = ref<any[]>(props.documents || []);
+const adminStatsLocal = ref(props.adminStats || {
     total: 0,
     published: 0,
     drafts: 0,
@@ -33,8 +37,8 @@ const selectedStatus = ref('');
 const showCreateModal = ref(false);
 const editingDocument = ref<any>(null);
 const saving = ref(false);
-const formErrors = ref<any>({});
-const notification = ref<{message: string, type: 'success' | 'error' | 'info'} | null>(null);
+const categories = ref<any[]>(props.categories || []);
+const formErrors = ref<any>(props.errors || {});
 
 const form = ref({
     title: '',
@@ -50,7 +54,19 @@ const form = ref({
     pdf_file_name: '',
 });
 
-const categories = ref<any[]>([]);
+// Show success/error messages from server
+if (props.success) {
+    setTimeout(() => {
+        alert(props.success);
+    }, 100);
+}
+
+if (props.error) {
+    setTimeout(() => {
+        alert(props.error);
+    }, 100);
+}
+
 const pdfInput = ref<any>(null);
 
 // Données mockées pour la démo
@@ -123,34 +139,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Admin methods
-const loadAdminData = async () => {
-    if (!isAdmin.value) return;
-
-    try {
-        const response = await fetch('/api/admin/documents');
-        const data = await response.json();
-        adminDocuments.value = data.data || [];
-        adminStatsLocal.value = {
-            total: adminDocuments.value.length,
-            published: adminDocuments.value.filter((d) => d.status === 'published').length,
-            drafts: adminDocuments.value.filter((d) => d.status === 'draft').length,
-            totalViews: adminDocuments.value.reduce((sum, d) => sum + (d.views_count || 0), 0),
-        };
-    } catch (error) {
-        console.error('Error loading admin data:', error);
-    }
-};
-
-const loadCategories = async () => {
-    try {
-        const response = await fetch('/api/legal/categories');
-        const data = await response.json();
-        categories.value = data.data || [];
-    } catch (error) {
-        console.error('Error loading categories:', error);
-    }
-};
 
 const getTypeColor = (type: string) => {
     const colors = {
@@ -199,6 +187,7 @@ const viewDocument = (doc: any) => {
 
 const editDocument = (doc: any) => {
     editingDocument.value = doc;
+    showCreateModal.value = true;
     form.value = {
         title: doc.title,
         reference_number: doc.reference_number || '',
@@ -214,101 +203,62 @@ const editDocument = (doc: any) => {
     };
 };
 
-const duplicateDocument = async (doc: any) => {
+const duplicateDocument = (doc: any) => {
     if (confirm('Êtes-vous sûr de vouloir dupliquer ce document ?')) {
-        try {
-            const response = await fetch(`/api/admin/documents/${doc.id}/duplicate`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                await loadAdminData();
-                showNotification(result.message || 'Document dupliqué avec succès !', 'success');
-            } else {
-                throw new Error(result.message || 'Erreur lors de la duplication');
+        router.post(`/dashboard/documents/${doc.id}/duplicate`, {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // La page sera rechargée automatiquement
             }
-        } catch (error) {
-            console.error('Error duplicating document:', error);
-            showNotification('Erreur lors de la duplication du document', 'error');
-        }
+        });
     }
 };
 
-const deleteDocument = async (doc: any) => {
+const deleteDocument = (doc: any) => {
     if (confirm(`Êtes-vous sûr de vouloir supprimer "${doc.title}" ? Cette action est irréversible.`)) {
-        try {
-            const response = await fetch(`/api/admin/documents/${doc.id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                await loadAdminData();
-                showNotification(result.message || 'Document supprimé avec succès !', 'success');
-            } else {
-                throw new Error(result.message || 'Erreur lors de la suppression');
+        router.delete(`/dashboard/documents/${doc.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // La page sera rechargée automatiquement
             }
-        } catch (error) {
-            console.error('Error deleting document:', error);
-            showNotification('Erreur lors de la suppression du document', 'error');
-        }
+        });
     }
 };
 
-const saveDocument = async () => {
+const submitForm = () => {
     saving.value = true;
-    formErrors.value = {};
-
-    try {
-        const formData = new FormData();
-
-        Object.keys(form.value).forEach((key) => {
-            if (form.value[key] !== null && form.value[key] !== '') {
-                formData.append(key, form.value[key]);
-            }
-        });
-
-        const url = editingDocument.value ? `/api/admin/documents/${editingDocument.value.id}` : '/api/admin/documents';
-
-        const method = editingDocument.value ? 'PUT' : 'POST';
-
-        const response = await fetch(url, {
-            method,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-            },
-            body: formData,
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            await loadAdminData();
-            closeModal();
-            showNotification(result.message, 'success');
-        } else {
-            if (result.errors) {
-                formErrors.value = result.errors;
-                showNotification('Veuillez corriger les erreurs dans le formulaire', 'error');
-            } else {
-                showNotification(result.message || 'Erreur lors de la sauvegarde', 'error');
-            }
+    
+    const formData = new FormData();
+    
+    Object.keys(form.value).forEach((key) => {
+        if (form.value[key] !== null && form.value[key] !== '') {
+            formData.append(key, form.value[key]);
         }
-    } catch (error) {
-        console.error('Error saving document:', error);
-        showNotification('Erreur lors de la sauvegarde du document', 'error');
-    } finally {
-        saving.value = false;
+    });
+
+    if (editingDocument.value) {
+        // Update existing document
+        formData.append('_method', 'PUT');
+        router.post(`/dashboard/documents/${editingDocument.value.id}`, formData, {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeModal();
+            },
+            onError: () => {
+                saving.value = false;
+            }
+        });
+    } else {
+        // Create new document
+        router.post('/dashboard/documents', formData, {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeModal();
+            },
+            onError: () => {
+                saving.value = false;
+            }
+        });
     }
 };
 
@@ -326,7 +276,7 @@ const handlePdfUpload = (event: any) => {
 const closeModal = () => {
     showCreateModal.value = false;
     editingDocument.value = null;
-    formErrors.value = {};
+    saving.value = false;
     form.value = {
         title: '',
         reference_number: '',
@@ -345,22 +295,10 @@ const closeModal = () => {
     }
 };
 
-const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    notification.value = { message, type };
-    setTimeout(() => {
-        notification.value = null;
-    }, 5000);
-};
-
 const getFieldError = (fieldName: string) => {
     return formErrors.value[fieldName] ? formErrors.value[fieldName][0] : null;
 };
 
-// Load admin data on mount if admin
-if (isAdmin.value) {
-    loadAdminData();
-    loadCategories();
-}
 
 const stats = [
     {
@@ -751,7 +689,7 @@ const stats = [
                         </button>
                     </div>
 
-                    <form @submit.prevent="saveDocument" class="space-y-6">
+                    <form @submit.prevent="submitForm" class="space-y-6">
                         <!-- Basic Info -->
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
@@ -948,26 +886,4 @@ const stats = [
             </div>
         </div>
     </AppLayout>
-    
-    <!-- Notification Toast -->
-    <div v-if="notification" 
-         :class="[
-             'fixed top-4 right-4 z-50 max-w-sm rounded-lg p-4 shadow-lg transition-all duration-300',
-             notification.type === 'success' ? 'bg-green-500 text-white' : 
-             notification.type === 'error' ? 'bg-red-500 text-white' : 
-             'bg-blue-500 text-white'
-         ]"
-    >
-        <div class="flex items-center justify-between">
-            <div class="flex items-center">
-                <CheckCircle v-if="notification.type === 'success'" class="mr-2 h-5 w-5" />
-                <X v-else-if="notification.type === 'error'" class="mr-2 h-5 w-5" />
-                <Activity v-else class="mr-2 h-5 w-5" />
-                <span class="text-sm font-medium">{{ notification.message }}</span>
-            </div>
-            <button @click="notification = null" class="ml-4 text-white/80 hover:text-white">
-                <X class="h-4 w-4" />
-            </button>
-        </div>
-    </div>
 </template>

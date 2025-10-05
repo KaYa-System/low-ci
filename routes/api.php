@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\DocumentsController;
 use App\Http\Controllers\Api\LegalCategoryController;
 use App\Http\Controllers\Api\LegalDocumentController;
 use App\Http\Controllers\Api\SearchController;
@@ -27,13 +26,7 @@ Route::prefix('legal')->group(function () {
     Route::get('search/advanced', [SearchController::class, 'advanced']);
 });
 
-// Routes d'administration - utilisées par le dashboard
-Route::middleware(['auth:web', 'admin'])->prefix('admin')->group(function () {
-    Route::apiResource('documents', DocumentsController::class);
-    Route::post('documents/{document}/duplicate', [DocumentsController::class, 'duplicate']);
-});
-
-// Routes pour l'IA Chat (si utilisées)
+// Routes pour l'IA Chat
 Route::prefix('ai')->group(function () {
     // Routes publiques pour créer une session
     Route::post('chat/sessions', [AiChatController::class, 'createSession']);

@@ -59,5 +59,17 @@ Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+// Routes de gestion des documents (admin uniquement)
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
+    Route::post('dashboard/documents', [App\Http\Controllers\DashboardController::class, 'storeDocument'])
+        ->name('dashboard.documents.store');
+    Route::put('dashboard/documents/{document}', [App\Http\Controllers\DashboardController::class, 'updateDocument'])
+        ->name('dashboard.documents.update');
+    Route::delete('dashboard/documents/{document}', [App\Http\Controllers\DashboardController::class, 'deleteDocument'])
+        ->name('dashboard.documents.delete');
+    Route::post('dashboard/documents/{document}/duplicate', [App\Http\Controllers\DashboardController::class, 'duplicateDocument'])
+        ->name('dashboard.documents.duplicate');
+});
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
