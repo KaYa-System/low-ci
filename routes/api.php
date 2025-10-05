@@ -27,8 +27,31 @@ Route::prefix('legal')->group(function () {
     Route::get('search/advanced', [SearchController::class, 'advanced']);
 });
 
+// Route de vérification d'authentification
+Route::middleware('api.auth')->get('/auth/check', function () {
+    return response()->json([
+        'authenticated' => true,
+        'user' => auth()->user(),
+        'is_admin' => auth()->user()->is_admin ?? false
+    ]);
+});
+
+// Route de debug temporaire
+Route::middleware('api.auth')->post('/debug/document-test', function (\Illuminate\Http\Request $request) {
+    return response()->json([
+        'success' => true,
+        'message' => 'Test réussi !',
+        'data' => [
+            'user' => auth()->user()->email,
+            'is_admin' => auth()->user()->is_admin,
+            'request_data' => $request->all(),
+            'files' => $request->allFiles()
+        ]
+    ]);
+});
+
 // Routes d'administration - utilisées par le dashboard
-Route::middleware(['auth:web', 'admin'])->prefix('admin')->group(function () {
+Route::middleware(['api.auth', 'admin'])->prefix('admin')->group(function () {
     Route::apiResource('documents', DocumentsController::class);
     Route::post('documents/{document}/duplicate', [DocumentsController::class, 'duplicate']);
 });
@@ -42,7 +65,7 @@ Route::prefix('ai')->group(function () {
     Route::get('chat/sessions/{session:session_id}/messages', [AiChatController::class, 'getMessages']);
     
     // Routes authentifiées
-    Route::middleware('auth:web')->group(function () {
+    Route::middleware('api.auth')->group(function () {
         Route::get('chat/sessions', [AiChatController::class, 'getUserSessions']);
         Route::delete('chat/sessions/{session:session_id}', [AiChatController::class, 'deleteSession']);
     });

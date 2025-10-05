@@ -128,7 +128,13 @@ const loadAdminData = async () => {
     if (!isAdmin.value) return;
 
     try {
-        const response = await fetch('/api/admin/documents');
+        const response = await fetch('/api/admin/documents', {
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        });
         const data = await response.json();
         adminDocuments.value = data.data || [];
         adminStatsLocal.value = {
@@ -284,7 +290,9 @@ const saveDocument = async () => {
 
         const response = await fetch(url, {
             method,
+            credentials: 'include',
             headers: {
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
             body: formData,
@@ -356,10 +364,97 @@ const getFieldError = (fieldName: string) => {
     return formErrors.value[fieldName] ? formErrors.value[fieldName][0] : null;
 };
 
+const testAuthentication = async () => {
+    try {
+        // Test d'abord la vérification d'authentification
+        const authResponse = await fetch('/api/auth/check', {
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        });
+        
+        console.log('Auth check status:', authResponse.status);
+        const authData = await authResponse.json();
+        console.log('Auth check data:', authData);
+        
+        if (authResponse.ok) {
+            // Test ensuite la création de document
+            const testFormData = new FormData();
+            testFormData.append('title', 'Test Document');
+            testFormData.append('type', 'loi');
+            testFormData.append('status', 'draft');
+            
+            const testResponse = await fetch('/api/debug/document-test', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: testFormData
+            });
+            
+            console.log('Test response status:', testResponse.status);
+            const testData = await testResponse.json();
+            console.log('Test response data:', testData);
+            
+            if (testResponse.ok) {
+                showNotification('Test réussi ! Authentification OK.', 'success');
+            } else {
+                showNotification(`Test échoué: ${testData.message}`, 'error');
+            }
+        } else {
+            showNotification(`Authentification échouée: ${authData.message}`, 'error');
+        }
+    } catch (error) {
+        console.error('Test error:', error);
+        showNotification('Erreur lors du test', 'error');
+    }
+};
+
+// Check authentication first
+const checkAuthentication = async () => {
+    try {
+        const response = await fetch('/api/auth/check', {
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('Authentication check failed:', error);
+            if (error.redirect) {
+                window.location.href = error.redirect;
+                return false;
+            }
+        } else {
+            const data = await response.json();
+            console.log('Authentication check successful:', data);
+            return data.authenticated && data.is_admin;
+        }
+    } catch (error) {
+        console.error('Authentication check error:', error);
+        return false;
+    }
+    return false;
+};
+
 // Load admin data on mount if admin
 if (isAdmin.value) {
-    loadAdminData();
-    loadCategories();
+    // Check authentication before loading data
+    checkAuthentication().then((authenticated) => {
+        if (authenticated) {
+            loadAdminData();
+            loadCategories();
+        } else {
+            showNotification('Erreur d\'authentification. Veuillez vous reconnecter.', 'error');
+        }
+    });
 }
 
 const stats = [
@@ -559,10 +654,16 @@ const stats = [
                                 <h2 class="text-2xl font-bold text-foreground">Gestion des Documents</h2>
                                 <p class="mt-2 text-muted-foreground">Gérez la constitution, les lois et autres documents juridiques</p>
                             </div>
-                            <Button @click="showCreateModal = true" class="gap-2">
-                                <Plus class="h-4 w-4" />
-                                Nouveau document
-                            </Button>
+                            <div class="flex gap-2">
+                                <Button @click="testAuthentication" variant="outline" class="gap-2">
+                                    <Activity class="h-4 w-4" />
+                                    Test Auth
+                                </Button>
+                                <Button @click="showCreateModal = true" class="gap-2">
+                                    <Plus class="h-4 w-4" />
+                                    Nouveau document
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
