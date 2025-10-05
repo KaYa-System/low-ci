@@ -33,6 +33,8 @@ const selectedStatus = ref('');
 const showCreateModal = ref(false);
 const editingDocument = ref<any>(null);
 const saving = ref(false);
+const formErrors = ref<any>({});
+const notification = ref<{message: string, type: 'success' | 'error' | 'info'} | null>(null);
 
 const form = ref({
     title: '',
@@ -223,15 +225,17 @@ const duplicateDocument = async (doc: any) => {
                 },
             });
 
+            const result = await response.json();
+
             if (response.ok) {
                 await loadAdminData();
-                alert('Document dupliqué avec succès !');
+                showNotification(result.message || 'Document dupliqué avec succès !', 'success');
             } else {
-                throw new Error('Erreur lors de la duplication');
+                throw new Error(result.message || 'Erreur lors de la duplication');
             }
         } catch (error) {
             console.error('Error duplicating document:', error);
-            alert('Erreur lors de la duplication du document');
+            showNotification('Erreur lors de la duplication du document', 'error');
         }
     }
 };
@@ -246,21 +250,24 @@ const deleteDocument = async (doc: any) => {
                 },
             });
 
+            const result = await response.json();
+
             if (response.ok) {
                 await loadAdminData();
-                alert('Document supprimé avec succès !');
+                showNotification(result.message || 'Document supprimé avec succès !', 'success');
             } else {
-                throw new Error('Erreur lors de la suppression');
+                throw new Error(result.message || 'Erreur lors de la suppression');
             }
         } catch (error) {
             console.error('Error deleting document:', error);
-            alert('Erreur lors de la suppression du document');
+            showNotification('Erreur lors de la suppression du document', 'error');
         }
     }
 };
 
 const saveDocument = async () => {
     saving.value = true;
+    formErrors.value = {};
 
     try {
         const formData = new FormData();
@@ -283,17 +290,23 @@ const saveDocument = async () => {
             body: formData,
         });
 
-        if (response.ok) {
+        const result = await response.json();
+
+        if (result.success) {
             await loadAdminData();
             closeModal();
-            alert(editingDocument.value ? 'Document modifié avec succès !' : 'Document créé avec succès !');
+            showNotification(result.message, 'success');
         } else {
-            const error = await response.json();
-            throw new Error(error.message || 'Erreur lors de la sauvegarde');
+            if (result.errors) {
+                formErrors.value = result.errors;
+                showNotification('Veuillez corriger les erreurs dans le formulaire', 'error');
+            } else {
+                showNotification(result.message || 'Erreur lors de la sauvegarde', 'error');
+            }
         }
     } catch (error) {
         console.error('Error saving document:', error);
-        alert('Erreur lors de la sauvegarde du document');
+        showNotification('Erreur lors de la sauvegarde du document', 'error');
     } finally {
         saving.value = false;
     }
@@ -313,6 +326,7 @@ const handlePdfUpload = (event: any) => {
 const closeModal = () => {
     showCreateModal.value = false;
     editingDocument.value = null;
+    formErrors.value = {};
     form.value = {
         title: '',
         reference_number: '',
@@ -329,6 +343,17 @@ const closeModal = () => {
     if (pdfInput.value) {
         pdfInput.value.value = '';
     }
+};
+
+const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    notification.value = { message, type };
+    setTimeout(() => {
+        notification.value = null;
+    }, 5000);
+};
+
+const getFieldError = (fieldName: string) => {
+    return formErrors.value[fieldName] ? formErrors.value[fieldName][0] : null;
 };
 
 // Load admin data on mount if admin
@@ -730,13 +755,20 @@ const stats = [
                         <!-- Basic Info -->
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Titre</label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700">Titre <span class="text-red-500">*</span></label>
                                 <input
                                     v-model="form.title"
                                     type="text"
                                     required
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                    :class="[
+                                        'w-full rounded-xl border px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500',
+                                        getFieldError('title') ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                    ]"
+                                    placeholder="Entrez le titre du document..."
                                 />
+                                <p v-if="getFieldError('title')" class="mt-1 text-sm text-red-600">
+                                    {{ getFieldError('title') }}
+                                </p>
                             </div>
 
                             <div>
@@ -744,18 +776,28 @@ const stats = [
                                 <input
                                     v-model="form.reference_number"
                                     type="text"
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                    :class="[
+                                        'w-full rounded-xl border px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500',
+                                        getFieldError('reference_number') ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                    ]"
+                                    placeholder="Ex: LOI-2024-001"
                                 />
+                                <p v-if="getFieldError('reference_number')" class="mt-1 text-sm text-red-600">
+                                    {{ getFieldError('reference_number') }}
+                                </p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Type</label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700">Type <span class="text-red-500">*</span></label>
                                 <select
                                     v-model="form.type"
                                     required
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                    :class="[
+                                        'w-full rounded-xl border px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500',
+                                        getFieldError('type') ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                    ]"
                                 >
                                     <option value="constitution">Constitution</option>
                                     <option value="loi">Loi</option>
@@ -764,31 +806,46 @@ const stats = [
                                     <option value="code">Code</option>
                                     <option value="ordonnance">Ordonnance</option>
                                 </select>
+                                <p v-if="getFieldError('type')" class="mt-1 text-sm text-red-600">
+                                    {{ getFieldError('type') }}
+                                </p>
                             </div>
 
                             <div>
                                 <label class="mb-2 block text-sm font-medium text-gray-700">Catégorie</label>
                                 <select
                                     v-model="form.category_id"
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                    :class="[
+                                        'w-full rounded-xl border px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500',
+                                        getFieldError('category_id') ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                    ]"
                                 >
                                     <option value="">Sélectionner une catégorie</option>
                                     <option v-for="category in categories" :key="category.id" :value="category.id">
                                         {{ category.name }}
                                     </option>
                                 </select>
+                                <p v-if="getFieldError('category_id')" class="mt-1 text-sm text-red-600">
+                                    {{ getFieldError('category_id') }}
+                                </p>
                             </div>
 
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700">Statut</label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700">Statut <span class="text-red-500">*</span></label>
                                 <select
                                     v-model="form.status"
-                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                    :class="[
+                                        'w-full rounded-xl border px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500',
+                                        getFieldError('status') ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                    ]"
                                 >
                                     <option value="draft">Brouillon</option>
                                     <option value="published">Publié</option>
                                     <option value="archived">Archivé</option>
                                 </select>
+                                <p v-if="getFieldError('status')" class="mt-1 text-sm text-red-600">
+                                    {{ getFieldError('status') }}
+                                </p>
                             </div>
                         </div>
 
@@ -815,29 +872,51 @@ const stats = [
 
                         <!-- Summary -->
                         <div>
-                            <label class="mb-2 block text-sm font-medium text-gray-700">Résumé</label>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Résumé</label>
+                                <span class="text-xs text-gray-500">{{ form.summary?.length || 0 }}/1000 caractères</span>
+                            </div>
                             <textarea
                                 v-model="form.summary"
                                 rows="3"
-                                class="w-full resize-none rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
+                                maxlength="1000"
+                                :class="[
+                                    'w-full resize-none rounded-xl border px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500',
+                                    getFieldError('summary') ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                ]"
                                 placeholder="Résumé du document..."
                             ></textarea>
+                            <p v-if="getFieldError('summary')" class="mt-1 text-sm text-red-600">
+                                {{ getFieldError('summary') }}
+                            </p>
                         </div>
 
                         <!-- PDF Upload -->
                         <div>
                             <label class="mb-2 block text-sm font-medium text-gray-700">Fichier PDF</label>
-                            <div class="rounded-xl border-2 border-dashed border-gray-300 p-8 text-center transition-colors hover:border-indigo-400">
-                                <FileText class="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                                <div class="mb-4 text-sm text-gray-600">
+                            <div :class="[
+                                'rounded-xl border-2 border-dashed p-8 text-center transition-colors',
+                                getFieldError('pdf_file') ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-indigo-400'
+                            ]">
+                                <FileText class="mx-auto mb-4 h-12 w-12" :class="getFieldError('pdf_file') ? 'text-red-400' : 'text-gray-400'" />
+                                <div class="mb-4 text-sm" :class="getFieldError('pdf_file') ? 'text-red-600' : 'text-gray-600'">
                                     Glissez-déposez votre fichier PDF ici, ou
-                                    <label class="cursor-pointer text-indigo-600 hover:text-indigo-800">
+                                    <label class="cursor-pointer font-medium" :class="getFieldError('pdf_file') ? 'text-red-700 hover:text-red-800' : 'text-indigo-600 hover:text-indigo-800'">
                                         parcourez
                                         <input ref="pdfInput" type="file" accept=".pdf" @change="handlePdfUpload" class="hidden" />
                                     </label>
                                 </div>
-                                <div v-if="form.pdf_file_name" class="text-sm text-green-600">Fichier sélectionné : {{ form.pdf_file_name }}</div>
+                                <div v-if="form.pdf_file_name" class="text-sm font-medium text-green-600">
+                                    <span class="inline-flex items-center">
+                                        <CheckCircle class="mr-1 h-4 w-4" />
+                                        Fichier sélectionné : {{ form.pdf_file_name }}
+                                    </span>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500">PDF uniquement, taille maximum : 50MB</p>
                             </div>
+                            <p v-if="getFieldError('pdf_file')" class="mt-1 text-sm text-red-600">
+                                {{ getFieldError('pdf_file') }}
+                            </p>
                         </div>
 
                         <!-- Content -->
@@ -869,4 +948,26 @@ const stats = [
             </div>
         </div>
     </AppLayout>
+    
+    <!-- Notification Toast -->
+    <div v-if="notification" 
+         :class="[
+             'fixed top-4 right-4 z-50 max-w-sm rounded-lg p-4 shadow-lg transition-all duration-300',
+             notification.type === 'success' ? 'bg-green-500 text-white' : 
+             notification.type === 'error' ? 'bg-red-500 text-white' : 
+             'bg-blue-500 text-white'
+         ]"
+    >
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <CheckCircle v-if="notification.type === 'success'" class="mr-2 h-5 w-5" />
+                <X v-else-if="notification.type === 'error'" class="mr-2 h-5 w-5" />
+                <Activity v-else class="mr-2 h-5 w-5" />
+                <span class="text-sm font-medium">{{ notification.message }}</span>
+            </div>
+            <button @click="notification = null" class="ml-4 text-white/80 hover:text-white">
+                <X class="h-4 w-4" />
+            </button>
+        </div>
+    </div>
 </template>
