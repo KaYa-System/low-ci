@@ -5,51 +5,45 @@ use App\Http\Controllers\Api\LegalCategoryController;
 use App\Http\Controllers\Api\LegalDocumentController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\AiChatController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-// Routes publiques pour la législation
+// Routes publiques pour la législation (nécessaires pour l'affichage public)
 Route::prefix('legal')->group(function () {
-    // Catégories
+    // Catégories - utilisées par le dashboard pour les sélecteurs
     Route::get('categories', [LegalCategoryController::class, 'index']);
     Route::get('categories/tree', [LegalCategoryController::class, 'tree']);
     Route::get('categories/{category:slug}', [LegalCategoryController::class, 'show']);
 
-    // Documents légaux
+    // Documents légaux - utilisés pour l'affichage public des documents
     Route::get('documents', [LegalDocumentController::class, 'index']);
     Route::get('documents/featured', [LegalDocumentController::class, 'featured']);
     Route::get('documents/recent', [LegalDocumentController::class, 'recent']);
     Route::get('documents/type/{type}', [LegalDocumentController::class, 'byType']);
     Route::get('documents/{document:slug}', [LegalDocumentController::class, 'show']);
 
-    // Recherche
+    // Recherche - utilisée par la page de recherche publique
     Route::get('search', [SearchController::class, 'search']);
     Route::get('search/suggestions', [SearchController::class, 'suggestions']);
     Route::get('search/advanced', [SearchController::class, 'advanced']);
 });
 
-// Routes pour l'IA Chat
-Route::prefix('ai')->group(function () {
-    Route::post('chat/sessions', [AiChatController::class, 'createSession']);
-    Route::get('chat/sessions/{session:session_id}', [AiChatController::class, 'getSession']);
-    Route::post('chat/sessions/{session:session_id}/messages', [AiChatController::class, 'sendMessage']);
-    Route::get('chat/sessions/{session:session_id}/messages', [AiChatController::class, 'getMessages']);
-    Route::get('chat/sessions', [AiChatController::class, 'getUserSessions']);
-});
-
-// Routes d'administration
-Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+// Routes d'administration - utilisées par le dashboard
+Route::middleware(['auth:web', 'admin'])->prefix('admin')->group(function () {
     Route::apiResource('documents', DocumentsController::class);
     Route::post('documents/{document}/duplicate', [DocumentsController::class, 'duplicate']);
 });
 
-// Routes authentifiées
-Route::middleware('auth:sanctum')->group(function () {
-    Route::prefix('ai')->group(function () {
+// Routes pour l'IA Chat (si utilisées)
+Route::prefix('ai')->group(function () {
+    // Routes publiques pour créer une session
+    Route::post('chat/sessions', [AiChatController::class, 'createSession']);
+    Route::get('chat/sessions/{session:session_id}', [AiChatController::class, 'getSession']);
+    Route::post('chat/sessions/{session:session_id}/messages', [AiChatController::class, 'sendMessage']);
+    Route::get('chat/sessions/{session:session_id}/messages', [AiChatController::class, 'getMessages']);
+    
+    // Routes authentifiées
+    Route::middleware('auth:web')->group(function () {
+        Route::get('chat/sessions', [AiChatController::class, 'getUserSessions']);
         Route::delete('chat/sessions/{session:session_id}', [AiChatController::class, 'deleteSession']);
     });
 });
