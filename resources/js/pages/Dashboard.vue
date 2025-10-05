@@ -13,6 +13,8 @@ import { computed, ref } from 'vue';
 const props = defineProps<{
     isAdmin?: boolean;
     adminStats?: any;
+    generalStats?: any;
+    advancedStats?: any;
     documents?: any[];
     categories?: any[];
     errors?: any;
@@ -39,6 +41,7 @@ const editingDocument = ref<any>(null);
 const saving = ref(false);
 const categories = ref<any[]>(props.categories || []);
 const formErrors = ref<any>(props.errors || {});
+const advancedStats = computed(() => props.advancedStats || {});
 
 const form = ref({
     title: '',
@@ -71,33 +74,35 @@ const pdfInput = ref<any>(null);
 
 // Données mockées pour la démo
 
-// Statistiques utilisateur normal
-const userStats = [
-    {
-        title: 'Documents Consultés',
-        value: '24',
-        change: '+12%',
-        trend: 'up',
-        icon: FileText,
-        color: 'bg-blue-500',
-    },
-    {
-        title: 'Questions Posées',
-        value: '8',
-        change: '+25%',
-        trend: 'up',
-        icon: Activity,
-        color: 'bg-green-500',
-    },
-    {
-        title: 'Temps Moyen',
-        value: '3.2 min',
-        change: '-8%',
-        trend: 'down',
-        icon: Clock,
-        color: 'bg-purple-500',
-    },
-];
+// Statistiques utilisateur normal - basées sur les stats générales
+const userStats = computed(() => {
+    const general = props.generalStats;
+    if (!general) return [];
+    
+    return [
+        {
+            title: 'Utilisateurs Total',
+            value: general.totalUsers?.toLocaleString() || '0',
+            subtitle: 'inscrits sur la plateforme',
+            icon: Users,
+            color: 'bg-blue-500',
+        },
+        {
+            title: 'Sessions IA',
+            value: general.recentAiSessions?.toLocaleString() || '0',
+            subtitle: 'actives cette semaine',
+            icon: Activity,
+            color: 'bg-green-500',
+        },
+        {
+            title: 'Consultations',
+            value: general.totalDocumentViews?.toLocaleString() || '0',
+            subtitle: 'documents consultés',
+            icon: FileText,
+            color: 'bg-purple-500',
+        },
+    ];
+});
 
 const recentActivities = [
     { title: 'Nouvelle procédure ajoutée', time: 'Il y a 5 min', type: 'success' },
@@ -300,32 +305,41 @@ const getFieldError = (fieldName: string) => {
 };
 
 
-const stats = [
-    {
-        title: 'Utilisateurs Actifs',
-        value: '2,847',
-        change: '+12%',
-        trend: 'up',
-        icon: Users,
-        color: 'bg-blue-500',
-    },
-    {
-        title: 'Procédures Traitées',
-        value: '1,329',
-        change: '+8%',
-        trend: 'up',
-        icon: FileText,
-        color: 'bg-green-500',
-    },
-    {
-        title: 'Taux de Satisfaction',
-        value: '94.2%',
-        change: '+2.1%',
-        trend: 'up',
-        icon: TrendingUp,
-        color: 'bg-purple-500',
-    },
-];
+const stats = computed(() => {
+    const general = props.generalStats;
+    if (!general) return [];
+    
+    return [
+        {
+            title: 'Utilisateurs Inscrits',
+            value: general.totalUsers?.toLocaleString() || '0',
+            subtitle: `${general.activeUsers || 0} actifs ce mois`,
+            icon: Users,
+            color: 'bg-blue-500',
+        },
+        {
+            title: 'Sessions IA Total',
+            value: general.totalAiSessions?.toLocaleString() || '0',
+            subtitle: `${general.anonAiSessions || 0} anonymes, ${general.userAiSessions || 0} connectées`,
+            icon: Activity,
+            color: 'bg-green-500',
+        },
+        {
+            title: 'Messages IA (30j)',
+            value: general.recentAiMessages?.toLocaleString() || '0',
+            subtitle: `${general.recentAiSessions || 0} sessions actives (7j)`,
+            icon: TrendingUp,
+            color: 'bg-purple-500',
+        },
+        {
+            title: 'Vues Documents',
+            value: general.totalDocumentViews?.toLocaleString() || '0',
+            subtitle: 'Total des consultations',
+            icon: FileText,
+            color: 'bg-indigo-500',
+        },
+    ];
+});
 </script>
 
 <template>
@@ -394,10 +408,8 @@ const stats = [
                         </CardHeader>
                         <CardContent>
                             <div class="text-3xl font-bold">{{ stat.value }}</div>
-                            <p class="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                                <TrendingUp class="h-3 w-3 text-green-500" />
-                                <span class="font-medium text-green-500">{{ stat.change }}</span>
-                                depuis le mois dernier
+                            <p class="mt-2 text-xs text-muted-foreground">
+                                {{ stat.subtitle }}
                             </p>
                         </CardContent>
                     </Card>
@@ -457,6 +469,62 @@ const stats = [
                         <Button variant="ghost" class="mt-4 w-full"> Voir toutes les activités </Button>
                     </CardContent>
                 </Card>
+                </div>
+
+                <!-- Statistiques avancées pour admins -->
+                <div v-if="isAdmin && advancedStats" class="space-y-8">
+                    <!-- Documents les plus consultés -->
+                    <Card class="glass-card border-border/50">
+                        <CardHeader>
+                            <CardTitle class="flex items-center gap-2">
+                                <FileText class="h-5 w-5 text-primary" />
+                                Documents les Plus Consultés
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="space-y-3">
+                                <div v-for="(doc, index) in advancedStats.topDocuments" :key="doc.slug" 
+                                     class="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                                            <span class="text-sm font-bold text-primary">{{ index + 1 }}</span>
+                                        </div>
+                                        <span class="font-medium text-foreground">{{ doc.title }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <Eye class="h-4 w-4 text-muted-foreground" />
+                                        <span class="text-sm text-muted-foreground">{{ doc.views_count }} vues</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Activité IA cette semaine -->
+                    <Card class="glass-card border-border/50">
+                        <CardHeader>
+                            <CardTitle class="flex items-center gap-2">
+                                <Activity class="h-5 w-5 text-primary" />
+                                Activité IA - 7 Derniers Jours
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="mb-4">
+                                <p class="text-2xl font-bold text-foreground">{{ advancedStats.messagesThisWeek || 0 }}</p>
+                                <p class="text-sm text-muted-foreground">messages cette semaine</p>
+                            </div>
+                            <div class="space-y-2">
+                                <div v-for="day in advancedStats.dailyAiUsage" :key="day.date" 
+                                     class="flex items-center justify-between">
+                                    <span class="text-sm text-muted-foreground">{{ new Date(day.date).toLocaleDateString('fr-FR', { weekday: 'short', month: 'short', day: 'numeric' }) }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="h-2 rounded-full bg-primary" :style="{ width: Math.max(10, (day.count / Math.max(...advancedStats.dailyAiUsage.map(d => d.count), 1)) * 100) + 'px' }"></div>
+                                        <span class="text-sm font-medium">{{ day.count }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <!-- Actions rapides -->

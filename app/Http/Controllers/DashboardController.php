@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\LegalDocument;
 use App\Models\LegalCategory;
+use App\Models\User;
+use App\Models\AiChatSession;
+use App\Models\AiChatMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
+use Smalot\PdfParser\Parser;
 
 class DashboardController extends Controller
 {
@@ -17,14 +24,43 @@ class DashboardController extends Controller
         $user = Auth::user();
         $isAdmin = $user && $user->is_admin;
 
+        // Calcul des statistiques générales
+        $totalUsers = User::count();
+        $activeUsers = User::where('updated_at', '>=', Carbon::now()->subDays(30))->count();
+        
+        // Sessions IA (avec et sans utilisateurs connectés)
+        $totalAiSessions = AiChatSession::count();
+        $anonAiSessions = AiChatSession::whereNull('user_id')->count();
+        $userAiSessions = AiChatSession::whereNotNull('user_id')->count();
+        
+        // Messages IA dans les 30 derniers jours
+        $recentAiMessages = AiChatMessage::where('sent_at', '>=', Carbon::now()->subDays(30))->count();
+        
+        // Documents consultés
+        $totalDocumentViews = LegalDocument::sum('views_count');
+        
+        // Sessions actives récemment (7 derniers jours)
+        $recentAiSessions = AiChatSession::where('last_activity', '>=', Carbon::now()->subDays(7))->count();
+
         $data = [
             'isAdmin' => $isAdmin,
+            'generalStats' => [
+                'totalUsers' => $totalUsers,
+                'activeUsers' => $activeUsers,
+                'totalAiSessions' => $totalAiSessions,
+                'anonAiSessions' => $anonAiSessions,
+                'userAiSessions' => $userAiSessions,
+                'recentAiMessages' => $recentAiMessages,
+                'totalDocumentViews' => $totalDocumentViews,
+                'recentAiSessions' => $recentAiSessions,
+            ],
         ];
 
         if ($isAdmin) {
             $documents = LegalDocument::with('category')->orderBy('updated_at', 'desc')->get();
             $categories = LegalCategory::where('is_active', true)->orderBy('sort_order')->get();
 
+            // Statistiques détaillées pour admin
             $data['adminStats'] = [
                 'total' => $documents->count(),
                 'published' => $documents->where('status', 'published')->count(),
@@ -34,6 +70,26 @@ class DashboardController extends Controller
 
             $data['documents'] = $documents->toArray();
             $data['categories'] = $categories->toArray();
+            
+            // Statistiques avancées pour admin
+            $data['advancedStats'] = [
+                'newUsersThisMonth' => User::where('created_at', '>=', Carbon::now()->startOfMonth())->count(),
+                'messagesThisWeek' => AiChatMessage::where('sent_at', '>=', Carbon::now()->startOfWeek())->count(),
+                'topDocuments' => LegalDocument::orderBy('views_count', 'desc')
+                    ->select('title', 'views_count', 'slug')
+                    ->limit(5)
+                    ->get()
+                    ->toArray(),
+                'dailyAiUsage' => AiChatMessage::select(
+                        DB::raw('DATE(sent_at) as date'),
+                        DB::raw('COUNT(*) as count')
+                    )
+                    ->where('sent_at', '>=', Carbon::now()->subDays(7))
+                    ->groupBy('date')
+                    ->orderBy('date')
+                    ->get()
+                    ->toArray(),
+            ];
         }
 
         return inertia('Dashboard', $data);
@@ -96,6 +152,24 @@ class DashboardController extends Controller
                 $document->pdf_url = Storage::url($path);
                 $document->pdf_file_name = $pdfFile->getClientOriginalName();
                 $document->pdf_file_size = $pdfFile->getSize();
+                
+                // Extract PDF content
+                try {
+                    $parser = new Parser();
+                    $pdf = $parser->parseFile($pdfFile->getPathname());
+                    $extractedText = $pdf->getText();
+                    
+                    // Clean and store the extracted text
+                    $document->content = $this->cleanExtractedText($extractedText);
+                    
+                    // Generate summary from first 500 characters if summary is empty
+                    if (empty($validated['summary']) && $extractedText) {
+                        $document->summary = Str::limit($this->cleanExtractedText($extractedText), 500);
+                    }
+                } catch (\Exception $e) {
+                    // Log the error but don't fail the upload
+                    Log::warning('PDF text extraction failed: ' . $e->getMessage());
+                }
             }
 
             $document->save();
@@ -173,6 +247,24 @@ class DashboardController extends Controller
                 $document->pdf_url = Storage::url($path);
                 $document->pdf_file_name = $pdfFile->getClientOriginalName();
                 $document->pdf_file_size = $pdfFile->getSize();
+                
+                // Extract PDF content
+                try {
+                    $parser = new Parser();
+                    $pdf = $parser->parseFile($pdfFile->getPathname());
+                    $extractedText = $pdf->getText();
+                    
+                    // Clean and store the extracted text
+                    $document->content = $this->cleanExtractedText($extractedText);
+                    
+                    // Generate summary from first 500 characters if summary is empty
+                    if (empty($validated['summary']) && $extractedText) {
+                        $document->summary = Str::limit($this->cleanExtractedText($extractedText), 500);
+                    }
+                } catch (\Exception $e) {
+                    // Log the error but don't fail the upload
+                    Log::warning('PDF text extraction failed: ' . $e->getMessage());
+                }
             }
 
             $document->save();
@@ -242,5 +334,25 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Erreur lors de la duplication du document: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Clean extracted text from PDF
+     */
+    private function cleanExtractedText($text)
+    {
+        if (!$text) {
+            return '';
+        }
+        
+        // Remove excessive whitespace and normalize line breaks
+        $text = preg_replace('/\s+/', ' ', $text);
+        $text = preg_replace('/[\r\n]+/', '\n', $text);
+        
+        // Remove common PDF artifacts
+        $text = preg_replace('/\f/', '', $text); // Form feed characters
+        $text = preg_replace('/\x{00A0}/u', ' ', $text); // Non-breaking spaces
+        
+        return trim($text);
     }
 }
