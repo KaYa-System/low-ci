@@ -868,6 +868,5 @@ const stats = [
                 </div>
             </div>
         </div>
-        </div>
     </AppLayout>
 </template>
