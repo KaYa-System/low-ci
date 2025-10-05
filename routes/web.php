@@ -63,11 +63,11 @@ Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::post('dashboard/documents', [App\Http\Controllers\DashboardController::class, 'storeDocument'])
         ->name('dashboard.documents.store');
-    Route::put('dashboard/documents/{document}', [App\Http\Controllers\DashboardController::class, 'updateDocument'])
+    Route::put('dashboard/documents/{document:id}', [App\Http\Controllers\DashboardController::class, 'updateDocument'])
         ->name('dashboard.documents.update');
-    Route::delete('dashboard/documents/{document}', [App\Http\Controllers\DashboardController::class, 'deleteDocument'])
+    Route::delete('dashboard/documents/{document:id}', [App\Http\Controllers\DashboardController::class, 'deleteDocument'])
         ->name('dashboard.documents.delete');
-    Route::post('dashboard/documents/{document}/duplicate', [App\Http\Controllers\DashboardController::class, 'duplicateDocument'])
+    Route::post('dashboard/documents/{document:id}/duplicate', [App\Http\Controllers\DashboardController::class, 'duplicateDocument'])
         ->name('dashboard.documents.duplicate');
 });
 

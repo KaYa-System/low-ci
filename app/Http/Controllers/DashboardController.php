@@ -287,6 +287,8 @@ class DashboardController extends Controller
             return back()->with('error', 'Accès non autorisé.');
         }
 
+        Log::info('Attempting to delete document', ['document_id' => $document->id, 'title' => $document->title]);
+
         try {
             // Delete PDF file if exists
             if ($document->pdf_url) {
