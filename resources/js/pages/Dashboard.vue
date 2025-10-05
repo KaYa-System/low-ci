@@ -6,7 +6,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Activity, BarChart3, ChevronRight, Clock, FileText, TrendingUp, Users } from 'lucide-vue-next';
+import { Activity, BarChart3, ChevronRight, CheckCircle, Clock, Copy, Edit, Eye, FileText, Plus, Trash2, TrendingUp, Users, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 // Props pour recevoir les données du backend
@@ -369,12 +369,12 @@ const stats = [
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 p-6">
+        <div class="space-y-8 p-6 lg:p-8">
             <!-- En-tête avec salutation -->
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
-                    <p class="mt-1 text-muted-foreground">Aperçu de vos activités et performances</p>
+                    <p class="mt-2 text-muted-foreground">Aperçu de vos activités et performances</p>
                 </div>
                 <div class="flex gap-3">
                     <Button variant="outline" class="gap-2">
@@ -394,18 +394,18 @@ const stats = [
                     <button
                         @click="activeTab = 'overview'"
                         :class="[
-                            'border-b-2 px-1 py-2 text-sm font-medium whitespace-nowrap',
+                            'border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap transition-colors',
                             activeTab === 'overview'
                                 ? 'border-primary text-primary'
                                 : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
                         ]"
                     >
-                        Aperçu
+                        Aperçu Général
                     </button>
                     <button
                         @click="activeTab = 'admin'"
                         :class="[
-                            'border-b-2 px-1 py-2 text-sm font-medium whitespace-nowrap',
+                            'border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap transition-colors',
                             activeTab === 'admin'
                                 ? 'border-primary text-primary'
                                 : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
@@ -415,44 +415,33 @@ const stats = [
                     </button>
                 </nav>
             </div>
-            <div class="flex gap-3">
-                <Button variant="outline" class="gap-2">
-                    <BarChart3 class="h-4 w-4" />
-                    Rapports
-                </Button>
-                <Button class="gap-2">
-                    <Activity class="h-4 w-4" />
-                    Nouvelle Analyse
-                </Button>
-            </div>
-        </div>
 
-        <!-- Overview Tab Content -->
-        <div v-if="!isAdmin || activeTab === 'overview'">
-            <!-- Statistiques principales -->
-            <div class="grid gap-6 md:grid-cols-3">
-                <Card v-for="stat in stats" :key="stat.title" class="group hover-lift glass-card relative overflow-hidden border-border/50">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-4">
-                        <CardTitle class="text-sm font-medium text-muted-foreground">
-                            {{ stat.title }}
-                        </CardTitle>
-                        <div :class="`rounded-lg p-2 ${stat.color} bg-opacity-10`">
-                            <component :is="stat.icon" :class="`h-5 w-5 ${stat.color.replace('bg-', 'text-')}`" />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-3xl font-bold">{{ stat.value }}</div>
-                        <p class="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                            <TrendingUp class="h-3 w-3 text-green-500" />
-                            <span class="font-medium text-green-500">{{ stat.change }}</span>
-                            depuis le mois dernier
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
+            <!-- Overview Tab Content -->
+            <div v-if="!isAdmin || activeTab === 'overview'" class="space-y-8">
+                <!-- Statistiques principales -->
+                <div class="grid gap-6 md:grid-cols-3">
+                    <Card v-for="stat in stats" :key="stat.title" class="group hover-lift glass-card relative overflow-hidden border-border/50">
+                        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-4">
+                            <CardTitle class="text-sm font-medium text-muted-foreground">
+                                {{ stat.title }}
+                            </CardTitle>
+                            <div :class="`rounded-lg p-2 ${stat.color} bg-opacity-10`">
+                                <component :is="stat.icon" :class="`h-5 w-5 ${stat.color.replace('bg-', 'text-')}`" />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="text-3xl font-bold">{{ stat.value }}</div>
+                            <p class="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                                <TrendingUp class="h-3 w-3 text-green-500" />
+                                <span class="font-medium text-green-500">{{ stat.change }}</span>
+                                depuis le mois dernier
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
 
-            <!-- Contenu principal -->
-            <div class="grid gap-6 lg:grid-cols-3">
+                <!-- Contenu principal -->
+                <div class="grid gap-8 lg:grid-cols-3">
                 <!-- Graphique principal -->
                 <Card class="glass-card border-border/50 lg:col-span-2">
                     <CardHeader>
@@ -505,205 +494,227 @@ const stats = [
                         <Button variant="ghost" class="mt-4 w-full"> Voir toutes les activités </Button>
                     </CardContent>
                 </Card>
+                </div>
+
+                <!-- Actions rapides -->
+                <Card class="glass-card border-border/50">
+                    <CardHeader>
+                        <CardTitle>Actions Rapides</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="grid gap-4 md:grid-cols-4">
+                            <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
+                                <FileText class="h-6 w-6" />
+                                <span class="text-sm">Nouvelle Procédure</span>
+                            </Button>
+                            <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
+                                <Users class="h-6 w-6" />
+                                <span class="text-sm">Gérer Utilisateurs</span>
+                            </Button>
+                            <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
+                                <BarChart3 class="h-6 w-6" />
+                                <span class="text-sm">Générer Rapport</span>
+                            </Button>
+                            <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
+                                <Activity class="h-6 w-6" />
+                                <span class="text-sm">Analyser Données</span>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
-            <!-- Actions rapides -->
-            <Card class="glass-card border-border/50">
-                <CardHeader>
-                    <CardTitle>Actions Rapides</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div class="grid gap-4 md:grid-cols-4">
-                        <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
-                            <FileText class="h-6 w-6" />
-                            <span class="text-sm">Nouvelle Procédure</span>
-                        </Button>
-                        <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
-                            <Users class="h-6 w-6" />
-                            <span class="text-sm">Gérer Utilisateurs</span>
-                        </Button>
-                        <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
-                            <BarChart3 class="h-6 w-6" />
-                            <span class="text-sm">Générer Rapport</span>
-                        </Button>
-                        <Button variant="outline" class="hover-lift h-20 flex-col gap-2">
-                            <Activity class="h-6 w-6" />
-                            <span class="text-sm">Analyser Données</span>
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-
-        <!-- Admin Tab Content -->
-        <div v-if="isAdmin && activeTab === 'admin'">
-            <!-- Admin Header -->
-            <div class="mb-8 rounded-2xl bg-white p-8 shadow-sm">
-                <div class="mb-6 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-3xl font-bold text-gray-900">Gestion des Documents</h2>
-                        <p class="mt-2 text-gray-600">Gérez la constitution, les lois et autres documents juridiques</p>
-                    </div>
-                    <button
-                        @click="showCreateModal = true"
-                        class="flex items-center rounded-xl bg-indigo-600 px-6 py-3 text-white transition-colors hover:bg-indigo-700"
-                    >
-                        <Plus class="mr-2 h-5 w-5" />
-                        Nouveau document
-                    </button>
-                </div>
+            <!-- Admin Tab Content -->
+            <div v-if="isAdmin && activeTab === 'admin'" class="space-y-8">
+                <!-- Admin Header -->
+                <Card class="glass-card border-border/50">
+                    <CardContent class="p-8">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-2xl font-bold text-foreground">Gestion des Documents</h2>
+                                <p class="mt-2 text-muted-foreground">Gérez la constitution, les lois et autres documents juridiques</p>
+                            </div>
+                            <Button @click="showCreateModal = true" class="gap-2">
+                                <Plus class="h-4 w-4" />
+                                Nouveau document
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <!-- Admin Stats -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
-                    <div class="rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 p-6">
-                        <div class="flex items-center">
-                            <FileText class="mr-3 h-8 w-8 text-blue-600" />
-                            <div>
-                                <p class="text-2xl font-bold text-blue-900">{{ adminStatsLocal.total }}</p>
-                                <p class="text-sm text-blue-700">Total documents</p>
+                    <Card class="glass-card border-border/50">
+                        <CardContent class="p-6">
+                            <div class="flex items-center">
+                                <div class="rounded-lg p-2 bg-blue-500 bg-opacity-10">
+                                    <FileText class="h-6 w-6 text-blue-500" />
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-2xl font-bold text-foreground">{{ adminStatsLocal.total }}</p>
+                                    <p class="text-sm text-muted-foreground">Total documents</p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
 
-                    <div class="rounded-xl bg-gradient-to-r from-green-50 to-green-100 p-6">
-                        <div class="flex items-center">
-                            <CheckCircle class="mr-3 h-8 w-8 text-green-600" />
-                            <div>
-                                <p class="text-2xl font-bold text-green-900">{{ adminStatsLocal.published }}</p>
-                                <p class="text-sm text-green-700">Publiés</p>
+                    <Card class="glass-card border-border/50">
+                        <CardContent class="p-6">
+                            <div class="flex items-center">
+                                <div class="rounded-lg p-2 bg-green-500 bg-opacity-10">
+                                    <CheckCircle class="h-6 w-6 text-green-500" />
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-2xl font-bold text-foreground">{{ adminStatsLocal.published }}</p>
+                                    <p class="text-sm text-muted-foreground">Publiés</p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
 
-                    <div class="rounded-xl bg-gradient-to-r from-yellow-50 to-yellow-100 p-6">
-                        <div class="flex items-center">
-                            <Clock class="mr-3 h-8 w-8 text-yellow-600" />
-                            <div>
-                                <p class="text-2xl font-bold text-yellow-900">{{ adminStatsLocal.drafts }}</p>
-                                <p class="text-sm text-yellow-700">Brouillons</p>
+                    <Card class="glass-card border-border/50">
+                        <CardContent class="p-6">
+                            <div class="flex items-center">
+                                <div class="rounded-lg p-2 bg-yellow-500 bg-opacity-10">
+                                    <Clock class="h-6 w-6 text-yellow-500" />
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-2xl font-bold text-foreground">{{ adminStatsLocal.drafts }}</p>
+                                    <p class="text-sm text-muted-foreground">Brouillons</p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
 
-                    <div class="rounded-xl bg-gradient-to-r from-purple-50 to-purple-100 p-6">
-                        <div class="flex items-center">
-                            <Eye class="mr-3 h-8 w-8 text-purple-600" />
-                            <div>
-                                <p class="text-2xl font-bold text-purple-900">{{ adminStatsLocal.totalViews }}</p>
-                                <p class="text-sm text-purple-700">Vues totales</p>
+                    <Card class="glass-card border-border/50">
+                        <CardContent class="p-6">
+                            <div class="flex items-center">
+                                <div class="rounded-lg p-2 bg-purple-500 bg-opacity-10">
+                                    <Eye class="h-6 w-6 text-purple-500" />
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-2xl font-bold text-foreground">{{ adminStatsLocal.totalViews }}</p>
+                                    <p class="text-sm text-muted-foreground">Vues totales</p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
                 </div>
-            </div>
 
-            <!-- Filters and Search -->
-            <div class="mb-8 rounded-2xl bg-white p-6 shadow-sm">
-                <div class="flex flex-col gap-4 lg:flex-row">
-                    <div class="flex-1">
-                        <input
-                            v-model="searchQuery"
-                            type="text"
-                            placeholder="Rechercher des documents..."
-                            class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
+                <!-- Filters and Search -->
+                <Card class="glass-card border-border/50">
+                    <CardContent class="p-6">
+                        <div class="flex flex-col gap-4 lg:flex-row">
+                            <div class="flex-1">
+                                <input
+                                    v-model="searchQuery"
+                                    type="text"
+                                    placeholder="Rechercher des documents..."
+                                    class="w-full rounded-lg border border-border px-4 py-3 bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+                                />
+                            </div>
 
-                    <div class="flex gap-4">
-                        <select
-                            v-model="selectedType"
-                            class="rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                        >
-                            <option value="">Tous les types</option>
-                            <option value="constitution">Constitution</option>
-                            <option value="loi">Loi</option>
-                            <option value="decret">Décret</option>
-                            <option value="arrete">Arrêté</option>
-                            <option value="code">Code</option>
-                            <option value="ordonnance">Ordonnance</option>
-                        </select>
+                            <div class="flex gap-3">
+                                <select
+                                    v-model="selectedType"
+                                    class="rounded-lg border border-border px-4 py-3 bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+                                >
+                                    <option value="">Tous les types</option>
+                                    <option value="constitution">Constitution</option>
+                                    <option value="loi">Loi</option>
+                                    <option value="decret">Décret</option>
+                                    <option value="arrete">Arrêté</option>
+                                    <option value="code">Code</option>
+                                    <option value="ordonnance">Ordonnance</option>
+                                </select>
 
-                        <select
-                            v-model="selectedStatus"
-                            class="rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-500"
-                        >
-                            <option value="">Tous les statuts</option>
-                            <option value="published">Publié</option>
-                            <option value="draft">Brouillon</option>
-                            <option value="archived">Archivé</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+                                <select
+                                    v-model="selectedStatus"
+                                    class="rounded-lg border border-border px-4 py-3 bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+                                >
+                                    <option value="">Tous les statuts</option>
+                                    <option value="published">Publié</option>
+                                    <option value="draft">Brouillon</option>
+                                    <option value="archived">Archivé</option>
+                                </select>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
-            <!-- Documents Table -->
-            <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Document</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Type</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Statut</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Vues</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Modifié</th>
-                                <th class="px-6 py-4 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 bg-white">
-                            <tr v-for="doc in filteredDocuments" :key="doc.id" class="hover:bg-gray-50">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0">
-                                            <div :class="`flex h-8 w-8 items-center justify-center rounded-lg ${getTypeColor(doc.type)}`">
-                                                <FileText class="h-4 w-4 text-white" />
+                <!-- Documents Table -->
+                <Card class="glass-card border-border/50">
+                    <CardContent class="p-0">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-muted/30">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-muted-foreground uppercase">Document</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-muted-foreground uppercase">Type</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-muted-foreground uppercase">Statut</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-muted-foreground uppercase">Vues</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium tracking-wider text-muted-foreground uppercase">Modifié</th>
+                                        <th class="px-6 py-4 text-right text-xs font-medium tracking-wider text-muted-foreground uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-border bg-background">
+                                    <tr v-for="doc in filteredDocuments" :key="doc.id" class="hover:bg-muted/30 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0">
+                                                    <div :class="`flex h-8 w-8 items-center justify-center rounded-lg ${getTypeColor(doc.type)}`">
+                                                        <FileText class="h-4 w-4 text-white" />
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-foreground">{{ doc.title }}</div>
+                                                    <div class="text-sm text-muted-foreground">{{ doc.reference_number }}</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ doc.title }}</div>
-                                            <div class="text-sm text-gray-500">{{ doc.reference_number }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold" :class="getTypeBadgeColor(doc.type)">
-                                        {{ doc.type }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold" :class="getStatusBadgeColor(doc.status)">
-                                        {{ doc.status }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-900">
-                                    {{ doc.views_count || 0 }}
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-500">
-                                    {{ formatDate(doc.updated_at) }}
-                                </td>
-                                <td class="px-6 py-4 text-right text-sm font-medium">
-                                    <div class="flex items-center justify-end space-x-2">
-                                        <button @click="viewDocument(doc)" class="p-1 text-indigo-600 hover:text-indigo-900" title="Voir">
-                                            <Eye class="h-4 w-4" />
-                                        </button>
-                                        <button @click="editDocument(doc)" class="p-1 text-blue-600 hover:text-blue-900" title="Modifier">
-                                            <Edit class="h-4 w-4" />
-                                        </button>
-                                        <button @click="duplicateDocument(doc)" class="p-1 text-green-600 hover:text-green-900" title="Dupliquer">
-                                            <Copy class="h-4 w-4" />
-                                        </button>
-                                        <button @click="deleteDocument(doc)" class="p-1 text-red-600 hover:text-red-900" title="Supprimer">
-                                            <Trash2 class="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold" :class="getTypeBadgeColor(doc.type)">
+                                                {{ doc.type }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold" :class="getStatusBadgeColor(doc.status)">
+                                                {{ doc.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-foreground">
+                                            {{ doc.views_count || 0 }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-muted-foreground">
+                                            {{ formatDate(doc.updated_at) }}
+                                        </td>
+                                        <td class="px-6 py-4 text-right text-sm font-medium">
+                                            <div class="flex items-center justify-end space-x-2">
+                                                <Button @click="viewDocument(doc)" variant="ghost" size="sm" class="h-8 w-8 p-0" title="Voir">
+                                                    <Eye class="h-4 w-4" />
+                                                </Button>
+                                                <Button @click="editDocument(doc)" variant="ghost" size="sm" class="h-8 w-8 p-0" title="Modifier">
+                                                    <Edit class="h-4 w-4" />
+                                                </Button>
+                                                <Button @click="duplicateDocument(doc)" variant="ghost" size="sm" class="h-8 w-8 p-0" title="Dupliquer">
+                                                    <Copy class="h-4 w-4" />
+                                                </Button>
+                                                <Button @click="deleteDocument(doc)" variant="ghost" size="sm" class="h-8 w-8 p-0 text-destructive hover:text-destructive" title="Supprimer">
+                                                    <Trash2 class="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
+        </div>
 
-            <!-- Create/Edit Modal -->
+        <!-- Create/Edit Modal -->
+        <div v-if="isAdmin && activeTab === 'admin'">
             <div v-if="showCreateModal || editingDocument" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                 <div class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-8">
                     <div class="mb-6 flex items-center justify-between">
@@ -856,6 +867,7 @@ const stats = [
                     </form>
                 </div>
             </div>
+        </div>
         </div>
     </AppLayout>
 </template>
